@@ -4,17 +4,25 @@
 //
 //  Created by Sergey on 19.09.2025.
 //
+// App/AppCoordinator.swift
 import SwiftUI
+import Combine
 
 @MainActor
-class AppCoordinator: ObservableObject {
+final class AppCoordinator: ObservableObject {
     @Published var currentFlow: AppFlow = .onboarding
     @Published var isLoading = false
     
-    enum AppFlow {
+    enum AppFlow: CaseIterable {
         case onboarding
         case main
         case subscription
+    }
+    
+    init() {
+        if UserDefaults.standard.bool(forKey: "onboarding_completed") {
+            currentFlow = .main
+        }
     }
     
     func startOnboarding() {
@@ -23,6 +31,7 @@ class AppCoordinator: ObservableObject {
     
     func completeOnboarding() {
         currentFlow = .main
+        UserDefaults.standard.set(true, forKey: "onboarding_completed")
     }
     
     func showSubscription() {

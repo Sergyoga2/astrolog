@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A561C1512E7ECCAF004AAE80 /* SwissEphemeris in Frameworks */ = {isa = PBXBuildFile; productRef = A561C1502E7ECCAF004AAE80 /* SwissEphemeris */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A5F23B6A2E7AA75D00DE959B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -30,6 +34,21 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		A561C11B2E7D4579004AAE80 /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = App;
+			sourceTree = "<group>";
+		};
+		A561C11F2E7D45BC004AAE80 /* Core */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Core;
+			sourceTree = "<group>";
+		};
+		A561C12F2E7D46FB004AAE80 /* Features */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Features;
+			sourceTree = "<group>";
+		};
 		A5F23B5E2E7AA75A00DE959B /* Astrolog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Astrolog;
@@ -52,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A561C1512E7ECCAF004AAE80 /* SwissEphemeris in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +95,9 @@
 		A5F23B532E7AA75A00DE959B = {
 			isa = PBXGroup;
 			children = (
+				A561C12F2E7D46FB004AAE80 /* Features */,
+				A561C11F2E7D45BC004AAE80 /* Core */,
+				A561C11B2E7D4579004AAE80 /* App */,
 				A5F23B5E2E7AA75A00DE959B /* Astrolog */,
 				A5F23B6C2E7AA75D00DE959B /* AstrologTests */,
 				A5F23B762E7AA75E00DE959B /* AstrologUITests */,
@@ -108,10 +131,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				A561C11B2E7D4579004AAE80 /* App */,
+				A561C11F2E7D45BC004AAE80 /* Core */,
+				A561C12F2E7D46FB004AAE80 /* Features */,
 				A5F23B5E2E7AA75A00DE959B /* Astrolog */,
 			);
 			name = Astrolog;
 			packageProductDependencies = (
+				A561C1502E7ECCAF004AAE80 /* SwissEphemeris */,
 			);
 			productName = Astrolog;
 			productReference = A5F23B5C2E7AA75A00DE959B /* Astrolog.app */;
@@ -195,6 +222,9 @@
 			);
 			mainGroup = A5F23B532E7AA75A00DE959B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A561C14F2E7ECCAF004AAE80 /* XCRemoteSwiftPackageReference "SwissEphemeris" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A5F23B5D2E7AA75A00DE959B /* Products */;
 			projectDirPath = "";
@@ -578,6 +608,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A561C14F2E7ECCAF004AAE80 /* XCRemoteSwiftPackageReference "SwissEphemeris" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/vsmithers1087/SwissEphemeris";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.99;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A561C1502E7ECCAF004AAE80 /* SwissEphemeris */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A561C14F2E7ECCAF004AAE80 /* XCRemoteSwiftPackageReference "SwissEphemeris" */;
+			productName = SwissEphemeris;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A5F23B542E7AA75A00DE959B /* Project object */;
 }

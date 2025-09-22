@@ -10,10 +10,7 @@ struct ContentView: View {
     @EnvironmentObject var coordinator: AppCoordinator
     
     var body: some View {
-        ZStack {
-            Color(.systemBackground)
-                .ignoresSafeArea()
-            
+        Group {
             switch coordinator.currentFlow {
             case .onboarding:
                 OnboardingCoordinator()
@@ -31,3 +28,4 @@ struct ContentView: View {
     ContentView()
         .environmentObject(AppCoordinator())
 }
+
