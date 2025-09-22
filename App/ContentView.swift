@@ -15,7 +15,7 @@ struct ContentView: View {
             case .onboarding:
                 OnboardingCoordinator()
             case .main:
-                MainTabView()
+                CosmicMainTabView()
             case .subscription:
                 SubscriptionView()
             }
