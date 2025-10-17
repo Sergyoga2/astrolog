@@ -340,7 +340,7 @@ struct CosmicLocationStepCard: View {
                     // Предложения городов
                     if viewModel.showingSuggestions && !viewModel.locationSuggestions.isEmpty {
                         CosmicLocationSuggestions(
-                            suggestions: Array(viewModel.locationSuggestions.prefix(5)),
+                            suggestions: viewModel.locationSuggestions,
                             onSelect: { suggestion in
                                 viewModel.selectLocation(suggestion)
                             }
@@ -467,41 +467,132 @@ struct CosmicLocationSuggestions: View {
 
     var body: some View {
         VStack(spacing: CosmicSpacing.small) {
-            ForEach(suggestions) { suggestion in
-                Button(action: {
-                    onSelect(suggestion)
-                }) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(suggestion.city)
-                                .font(CosmicTypography.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(.starWhite)
+            // Заголовок с количеством найденных городов
+            HStack {
+                Text("Найденные города")
+                    .font(CosmicTypography.caption)
+                    .foregroundColor(.starWhite.opacity(0.7))
+                    .fontWeight(.medium)
 
-                            Text(suggestion.country)
-                                .font(CosmicTypography.caption)
-                                .foregroundColor(.starWhite.opacity(0.7))
-                        }
+                Spacer()
 
-                        Spacer()
+                Text("\(suggestions.count) результатов")
+                    .font(CosmicTypography.caption)
+                    .foregroundColor(.neonCyan)
+            }
+            .padding(.horizontal, CosmicSpacing.small)
 
-                        Image(systemName: "location.fill")
-                            .foregroundColor(.neonCyan)
+            // Прокручиваемый список результатов
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(spacing: CosmicSpacing.small) {
+                    ForEach(suggestions) { suggestion in
+                        CosmicCitySuggestionRow(
+                            suggestion: suggestion,
+                            onSelect: { onSelect(suggestion) }
+                        )
                     }
                 }
-                .buttonStyle(.plain)
-                .padding(CosmicSpacing.medium)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.neonCyan.opacity(0.3), lineWidth: 1)
-                        )
-                )
-                .modifier(NeonGlow(color: .neonCyan, intensity: 0.2))
             }
+            .frame(maxHeight: 300) // Ограничиваем высоту для прокрутки
         }
+        .padding(CosmicSpacing.small)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.neonCyan.opacity(0.2), lineWidth: 1)
+                )
+        )
+        .modifier(NeonGlow(color: .neonCyan, intensity: 0.3))
+    }
+}
+
+struct CosmicCitySuggestionRow: View {
+    let suggestion: LocationSuggestion
+    let onSelect: () -> Void
+
+    @State private var isPressed = false
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(spacing: CosmicSpacing.medium) {
+                // Иконка местоположения
+                ZStack {
+                    Circle()
+                        .fill(Color.neonCyan.opacity(0.2))
+                        .frame(width: 40, height: 40)
+
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.neonCyan)
+                }
+
+                // Информация о городе
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(suggestion.city)
+                        .font(CosmicTypography.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.starWhite)
+                        .multilineTextAlignment(.leading)
+
+                    HStack(spacing: 4) {
+                        Text(suggestion.country)
+                            .font(CosmicTypography.caption)
+                            .foregroundColor(.starWhite.opacity(0.7))
+
+                        // Показываем часовой пояс если есть
+                        if let timeZone = suggestion.timeZoneId {
+                            Text("•")
+                                .font(CosmicTypography.caption)
+                                .foregroundColor(.starWhite.opacity(0.5))
+
+                            Text(formatTimeZone(timeZone))
+                                .font(CosmicTypography.caption)
+                                .foregroundColor(.neonPurple.opacity(0.8))
+                        }
+                    }
+
+                    // Координаты
+                    Text(String(format: "%.4f°, %.4f°", suggestion.latitude, suggestion.longitude))
+                        .font(.system(size: 10, weight: .regular, design: .monospaced))
+                        .foregroundColor(.starWhite.opacity(0.5))
+                }
+
+                Spacer()
+
+                // Стрелка выбора
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.neonCyan.opacity(0.6))
+            }
+            .padding(CosmicSpacing.medium)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isPressed ? Color.neonCyan.opacity(0.1) : .clear)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(
+                                isPressed ? Color.neonCyan.opacity(0.5) : Color.neonCyan.opacity(0.2),
+                                lineWidth: isPressed ? 2 : 1
+                            )
+                    )
+            )
+            .scaleEffect(isPressed ? 0.98 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: isPressed)
+        }
+        .buttonStyle(.plain)
+        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity,
+                           pressing: { pressing in
+                               isPressed = pressing
+                           }, perform: {})
+    }
+
+    private func formatTimeZone(_ timeZoneId: String) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: timeZoneId)
+        formatter.dateFormat = "z"
+        return formatter.string(from: Date())
     }
 }
 

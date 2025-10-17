@@ -25,8 +25,9 @@ class BirthDataInputViewModel: ObservableObject {
     @Published var isSaved = false
     @Published var locationSuggestions: [LocationSuggestion] = []
     @Published var showingSuggestions = false
-    
+
     private let geocoder = CLGeocoder()
+    private let globalCitySearch = GlobalCitySearchService.shared
     private var searchTask: Task<Void, Never>?
     
     var hasCoordinates: Bool {
@@ -70,91 +71,56 @@ class BirthDataInputViewModel: ObservableObject {
             showingSuggestions = false
             return
         }
-        
+
         // Отменяем предыдущий поиск
         searchTask?.cancel()
-        
-        // Сначала ищем в популярных городах
-        let filteredPopularCities = popularCities.filter {
-            $0.city.localizedCaseInsensitiveContains(city) ||
-            $0.country.localizedCaseInsensitiveContains(city)
-        }
-        
-        locationSuggestions = filteredPopularCities
-        showingSuggestions = !filteredPopularCities.isEmpty
-        
-        // Если найдено точное совпадение в популярных городах, используем его
-        if let exactMatch = filteredPopularCities.first(where: {
-            $0.city.localizedCaseInsensitiveCompare(city) == .orderedSame
-        }) {
-            selectLocation(exactMatch)
-            return
-        }
-        
-        // Если не нашли в популярных, ищем через Geocoder
-        guard city.count >= 3 else { return }
-        
+
+        // Мгновенно показываем индикатор загрузки для лучшего UX
         isSearchingLocation = true
         errorMessage = nil
-        
+
         searchTask = Task {
             do {
-                try await Task.sleep(nanoseconds: 500_000_000) // debouncing
-                
-                // Пробуем разные варианты поиска
-                let searchQueries = [
-                    city,
-                    "\(city), \(countryName)".trimmingCharacters(in: .punctuationCharacters.union(.whitespaces)),
-                    countryName.isEmpty ? city : "\(city), \(countryName)"
-                ]
-                
-                var foundPlacemark: CLPlacemark?
-                
-                for query in searchQueries {
-                    guard !query.isEmpty else { continue }
-                    
-                    do {
-                        let placemarks = try await geocoder.geocodeAddressString(query)
-                        if let placemark = placemarks.first {
-                            foundPlacemark = placemark
-                            break
-                        }
-                    } catch {
-                        // Продолжаем поиск с другими вариантами
-                        continue
-                    }
-                }
-                
-                if let placemark = foundPlacemark,
-                   let location = placemark.location {
-                    
-                    let suggestion = LocationSuggestion(
-                        city: placemark.locality ?? city,
-                        country: placemark.country ?? countryName,
-                        latitude: location.coordinate.latitude,
-                        longitude: location.coordinate.longitude,
-                        timeZoneId: placemark.timeZone?.identifier
+                // Небольшая задержка для debouncing
+                try await Task.sleep(nanoseconds: 200_000_000) // 200ms
+
+                // Используем глобальный поиск городов
+                let cityResults = await globalCitySearch.searchCities(query: city, limit: 15)
+
+                // Преобразуем результаты в LocationSuggestion
+                let suggestions = cityResults.map { cityResult in
+                    LocationSuggestion(
+                        city: cityResult.name,
+                        country: cityResult.country,
+                        latitude: cityResult.latitude,
+                        longitude: cityResult.longitude,
+                        timeZoneId: cityResult.timeZoneId
                     )
-                    
-                    await MainActor.run {
-                        // Добавляем найденное место к предложениям
-                        if !self.locationSuggestions.contains(where: { $0.city == suggestion.city && $0.country == suggestion.country }) {
-                            self.locationSuggestions.insert(suggestion, at: 0)
-                        }
-                        self.showingSuggestions = true
-                        self.isSearchingLocation = false
+                }
+
+                await MainActor.run {
+                    self.locationSuggestions = suggestions
+                    self.showingSuggestions = !suggestions.isEmpty
+                    self.isSearchingLocation = false
+
+                    if suggestions.isEmpty {
+                        self.errorMessage = "Город '\(city)' не найден. Попробуйте другое название или проверьте написание."
+                    } else {
+                        self.errorMessage = nil
                     }
                 }
+
             } catch {
                 if !Task.isCancelled {
                     await MainActor.run {
-                        self.errorMessage = "Не удалось найти город. Попробуйте добавить страну или выберите из списка популярных городов."
+                        self.errorMessage = "Произошла ошибка при поиске. Проверьте подключение к интернету."
                         self.isSearchingLocation = false
                     }
                 }
             }
         }
     }
+
     
     func selectLocation(_ suggestion: LocationSuggestion) {
         cityName = suggestion.city

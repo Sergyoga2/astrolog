@@ -55,9 +55,56 @@ class TodayViewModel: ObservableObject {
             let transits = try await astrologyService.getCurrentTransits()
             self.transits = transits
             self.isLoadingTransits = false
+
+            // Для отладки - выводим количество транзитов
+            print("✅ Loaded \(transits.count) transits")
+
         } catch {
+            self.errorMessage = "Не удалось загрузить транзиты: \(error.localizedDescription)"
             self.isLoadingTransits = false
+
+            // Создаем fallback транзиты при ошибке
+            self.transits = createFallbackTransits()
+            print("❌ Transit loading failed, using fallback: \(error)")
         }
+    }
+
+    private func createFallbackTransits() -> [Transit] {
+        return [
+            Transit(
+                planet: .venus,
+                sign: .taurus,
+                aspectType: .trine,
+                natalPlanet: .sun,
+                startDate: Date(),
+                endDate: Calendar.current.date(byAdding: .day, value: 10, to: Date()) ?? Date(),
+                description: "Венера в Тельце образует благоприятный аспект",
+                influence: "Гармония в отношениях и финансах",
+                influenceLevel: 4
+            ),
+            Transit(
+                planet: .mars,
+                sign: .aries,
+                aspectType: .square,
+                natalPlanet: .mercury,
+                startDate: Date(),
+                endDate: Calendar.current.date(byAdding: .day, value: 5, to: Date()) ?? Date(),
+                description: "Марс в Овне создает напряжение с Меркурием",
+                influence: "Будьте осторожны с импульсивными решениями",
+                influenceLevel: 3
+            ),
+            Transit(
+                planet: .jupiter,
+                sign: .sagittarius,
+                aspectType: .sextile,
+                natalPlanet: .venus,
+                startDate: Date(),
+                endDate: Calendar.current.date(byAdding: .day, value: 20, to: Date()) ?? Date(),
+                description: "Юпитер в Стрельце поддерживает Венеру",
+                influence: "Расширение возможностей в любви и творчестве",
+                influenceLevel: 5
+            )
+        ]
     }
 
     // Синхронные версии для обратной совместимости
