@@ -19,10 +19,14 @@ struct DailyHoroscope: Codable, Identifiable {
     let id = UUID().uuidString
     let date: Date
     let sunSign: ZodiacSign
+    let summary: String  // Краткий прогноз
+    let detailedForecast: String  // Подробный прогноз
     let generalForecast: String
     let loveAndRelationships: String
     let careerAndFinances: String
     let healthAndEnergy: String
+    let energyLevel: Int  // 1-10
+    let keyThemes: [String]  // Ключевые темы дня
     let luckyNumbers: [Int]
     let luckyColors: [String]
     let advice: String
@@ -50,10 +54,12 @@ struct CompatibilityCategories: Codable {
 struct Transit: Codable, Identifiable {
     let id = UUID().uuidString
     let planet: PlanetType
-    let aspectType: AspectType
-    let natalPlanet: PlanetType
+    let sign: ZodiacSign  // Знак, в которой находится планета
+    let aspectType: AspectType?  // Может быть nil для простых транзитов
+    let natalPlanet: PlanetType?  // Может быть nil для простых транзитов
     let startDate: Date
     let endDate: Date
     let description: String
     let influence: String
+    let influenceLevel: Int  // 1-5 уровень влияния
 }

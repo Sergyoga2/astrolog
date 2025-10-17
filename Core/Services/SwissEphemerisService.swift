@@ -64,6 +64,12 @@ class SwissEphemerisService: AstrologyServiceProtocol {
         
         return BirthChart(
             userId: "user_123",
+            name: "Swiss Ephemeris Chart",
+            birthDate: birthData.date,
+            birthTime: DateFormatter.localizedString(from: birthData.date, dateStyle: .none, timeStyle: .short),
+            location: "\(birthData.cityName), \(birthData.countryName)",
+            latitude: birthData.latitude,
+            longitude: birthData.longitude,
             planets: planets,
             houses: houses,
             aspects: aspects

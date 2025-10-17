@@ -11,7 +11,7 @@ import Combine
 @MainActor
 class TodayViewModel: ObservableObject {
     @Published var dailyHoroscope: DailyHoroscope?
-    @Published var currentTransits: [Transit] = []
+    @Published var transits: [Transit] = []
     @Published var isLoadingHoroscope = false
     @Published var isLoadingTransits = false
     @Published var errorMessage: String?
@@ -22,51 +22,51 @@ class TodayViewModel: ObservableObject {
         self.astrologyService = astrologyService
     }
     
+    func loadTodayData() async {
+        await loadDailyHoroscope()
+        await loadCurrentTransits()
+    }
+
     func loadTodayContent() {
-        loadDailyHoroscope()
-        loadCurrentTransits()
+        loadDailyHoroscopeSync()
+        loadCurrentTransitsSync()
     }
     
-    private func loadDailyHoroscope() {
+    private func loadDailyHoroscope() async {
         isLoadingHoroscope = true
         errorMessage = nil
-        
-        Task {
-            do {
-                let sunSign = ZodiacSign.leo
-                // ИСПРАВЛЕНО: добавляем параметр date
-                let horoscope = try await astrologyService.generateDailyHoroscope(for: sunSign, date: Date())
-                
-                await MainActor.run {
-                    self.dailyHoroscope = horoscope
-                    self.isLoadingHoroscope = false
-                }
-            } catch {
-                await MainActor.run {
-                    self.errorMessage = "Не удалось загрузить гороскоп: \(error.localizedDescription)"
-                    self.isLoadingHoroscope = false
-                }
-            }
+
+        do {
+            let sunSign = ZodiacSign.leo
+            let horoscope = try await astrologyService.generateDailyHoroscope(for: sunSign, date: Date())
+
+            self.dailyHoroscope = horoscope
+            self.isLoadingHoroscope = false
+        } catch {
+            self.errorMessage = "Не удалось загрузить гороскоп: \(error.localizedDescription)"
+            self.isLoadingHoroscope = false
         }
     }
-    
-    private func loadCurrentTransits() {
+
+    private func loadCurrentTransits() async {
         isLoadingTransits = true
-        
-        Task {
-            do {
-                let transits = try await astrologyService.getCurrentTransits()
-                
-                await MainActor.run {
-                    self.currentTransits = transits
-                    self.isLoadingTransits = false
-                }
-            } catch {
-                await MainActor.run {
-                    self.isLoadingTransits = false
-                }
-            }
+
+        do {
+            let transits = try await astrologyService.getCurrentTransits()
+            self.transits = transits
+            self.isLoadingTransits = false
+        } catch {
+            self.isLoadingTransits = false
         }
+    }
+
+    // Синхронные версии для обратной совместимости
+    private func loadDailyHoroscopeSync() {
+        Task { await loadDailyHoroscope() }
+    }
+
+    private func loadCurrentTransitsSync() {
+        Task { await loadCurrentTransits() }
     }
     
     func refreshContent() {

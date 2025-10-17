@@ -9,7 +9,6 @@ import SwiftUI
 
 struct CosmicMainTabView: View {
     @State private var selectedTab = 0
-    @State private var tabBarOffset: CGFloat = 0
     
     init() {
         // Настройка прозрачного TabBar
@@ -23,28 +22,37 @@ struct CosmicMainTabView: View {
             // Фоновый слой
             StarfieldBackground()
                 .ignoresSafeArea()
-            
-            // Основной контент
-            TabView(selection: $selectedTab) {
-                TodayView() // Временно используем существующий
-                    .tag(0)
-                
-                ChartView()
-                    .tag(1)
-                
-                SocialView()
-                    .tag(2)
-                
-                MindfulnessView()
-                    .tag(3)
-                
-                ProfileView()
-                    .tag(4)
+
+            // Основной контент с правильными отступами
+            VStack(spacing: 0) {
+                // Контент экранов
+                Group {
+                    switch selectedTab {
+                    case 0:
+                        TodayView()
+                    case 1:
+                        ChartView()
+                    case 2:
+                        SocialView()
+                    case 3:
+                        MindfulnessView()
+                    case 4:
+                        ProfileView()
+                    default:
+                        TodayView()
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                // Отступ для кастомного TabBar
+                Spacer()
+                    .frame(height: 100) // Место для TabBar
             }
-            .overlay(alignment: .bottom) {
-                // Кастомный TabBar
+
+            // Кастомный TabBar поверх контента
+            VStack {
+                Spacer()
                 CosmicTabBar(selectedTab: $selectedTab)
-                    .offset(y: tabBarOffset)
             }
         }
     }
@@ -76,6 +84,7 @@ struct CosmicTabBar: View {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         selectedTab = index
                     }
+                    CosmicFeedbackManager.shared.cosmicTransition()
                 }
             }
         }

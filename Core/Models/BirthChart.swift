@@ -6,10 +6,17 @@
 //
 // Core/Models/BirthChart.swift
 import Foundation
+import SwiftUI
 
 struct BirthChart: Codable, Identifiable {
     let id = UUID().uuidString
     let userId: String
+    let name: String
+    let birthDate: Date
+    let birthTime: String
+    let location: String
+    let latitude: Double
+    let longitude: Double
     let planets: [Planet]
     let houses: [House]
     let aspects: [Aspect]
@@ -36,7 +43,12 @@ struct Planet: Codable, Identifiable {
     let zodiacSign: ZodiacSign
     let house: Int // 1-12
     let isRetrograde: Bool
-    
+
+    // Для совместимости с Firebase API
+    var name: String { type.displayName }
+    var sign: String { zodiacSign.displayName }
+    var degree: Double { longitude }
+
     // Градусы внутри знака (0-30)
     var degreeInSign: Double {
         longitude.truncatingRemainder(dividingBy: 30)
@@ -99,6 +111,24 @@ enum PlanetType: String, CaseIterable, Codable {
         case .northNode: return "Северный узел"
         }
     }
+
+    var color: Color {
+        switch self {
+        case .sun: return .starYellow
+        case .moon: return .starWhite
+        case .mercury: return .neonCyan
+        case .venus: return .cosmicPink
+        case .mars: return .neonPink
+        case .jupiter: return .cosmicViolet
+        case .saturn: return .cosmicPurple
+        case .uranus: return .neonBlue
+        case .neptune: return .cosmicBlue
+        case .pluto: return .cosmicDarkPurple
+        case .ascendant: return .neonPurple
+        case .midheaven: return .starOrange
+        case .northNode: return .cosmicCyan
+        }
+    }
 }
 
 enum ZodiacSign: Int, CaseIterable, Codable {
@@ -135,7 +165,24 @@ enum ZodiacSign: Int, CaseIterable, Codable {
         case .cancer, .scorpio, .pisces: return .water
         }
     }
-    
+
+    var color: Color {
+        switch self {
+        case .aries: return .starOrange
+        case .taurus: return .cosmicTeal
+        case .gemini: return .starYellow
+        case .cancer: return .starWhite
+        case .leo: return .starOrange
+        case .virgo: return .cosmicTeal
+        case .libra: return .cosmicPink
+        case .scorpio: return .neonPink
+        case .sagittarius: return .neonPurple
+        case .capricorn: return .deepSpace
+        case .aquarius: return .neonBlue
+        case .pisces: return .cosmicViolet
+        }
+    }
+
     enum Element: String, CaseIterable {
         case fire = "fire"
         case earth = "earth"

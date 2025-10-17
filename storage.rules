@@ -1,0 +1,47 @@
+// Firebase Storage Security Rules for AstroWise App
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // User profile data and birth chart exports
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null &&
+                         request.auth.uid == userId &&
+                         resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+
+    // Birth chart images and exports
+    match /charts/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null &&
+                         request.auth.uid == userId &&
+                         request.resource.contentType.matches('image/.*') &&
+                         resource.size < 5 * 1024 * 1024; // 5MB limit for images
+    }
+
+    // Meditation audio files - read-only for authenticated users
+    match /audio/meditations/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins can upload (TODO: implement admin check)
+    }
+
+    // Horoscope images and assets - read-only
+    match /assets/horoscopes/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admins
+    }
+
+    // Shared chart exports for social features
+    match /shared/{chartId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+                   request.resource.contentType.matches('image/.*') &&
+                   resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+
+    // App assets and static content - public read
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // Only admins
+    }
+  }
+}

@@ -15,6 +15,12 @@ class MockAstrologyService: ObservableObject {
         
         return BirthChart(
             userId: "mock_user",
+            name: "Mock Birth Chart",
+            birthDate: birthData.date,
+            birthTime: DateFormatter.localizedString(from: birthData.date, dateStyle: .none, timeStyle: .short),
+            location: "\(birthData.cityName), \(birthData.countryName)",
+            latitude: birthData.latitude,
+            longitude: birthData.longitude,
             planets: createMockPlanets(),
             houses: createMockHouses(),
             aspects: createMockAspects()

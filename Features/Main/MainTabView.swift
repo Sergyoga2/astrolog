@@ -14,68 +14,30 @@ struct MainTabView: View {
                     Image(systemName: "house")
                     Text("Сегодня")
                 }
-            
+
             ChartView()
                 .tabItem {
                     Image(systemName: "star")
                     Text("Карта")
                 }
-            
+
             SocialView()
                 .tabItem {
                     Image(systemName: "person.2")
                     Text("Друзья")
                 }
-            
+
             MindfulnessView()
                 .tabItem {
                     Image(systemName: "leaf")
                     Text("Практики")
                 }
-            
+
             ProfileView()
                 .tabItem {
                     Image(systemName: "person.circle")
                     Text("Профиль")
                 }
-        }
-    }
-}
-
-// Временные заглушки для табов
-struct TodayView: View {
-    @StateObject private var viewModel = TodayViewModel()
-    
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    
-                    // Секция гороскопа
-                    HoroscopeSection(
-                        horoscope: viewModel.dailyHoroscope,
-                        isLoading: viewModel.isLoadingHoroscope,
-                        errorMessage: viewModel.errorMessage
-                    )
-                    
-                    // Секция транзитов
-                    if !viewModel.currentTransits.isEmpty {
-                        TransitsSection(transits: viewModel.currentTransits)
-                    }
-                    
-                    Spacer(minLength: 100)
-                }
-                .padding(.top)
-            }
-            .navigationTitle("Сегодня")
-            .refreshable {
-                viewModel.refreshContent()
-            }
-            .onAppear {
-                if viewModel.dailyHoroscope == nil {
-                    viewModel.loadTodayContent()
-                }
-            }
         }
     }
 }
@@ -205,7 +167,7 @@ struct TransitCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("\(transit.planet.symbol) \(transit.aspectType.symbol) \(transit.natalPlanet.symbol)")
+                Text("\(transit.planet.symbol) \(transit.aspectType?.symbol ?? "-") \(transit.natalPlanet?.symbol ?? "")")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 
@@ -229,98 +191,6 @@ struct TransitCard: View {
         .cornerRadius(8)
         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
         .padding(.horizontal)
-    }
-}
-
-struct ChartView: View {
-    @StateObject private var viewModel = ChartViewModel()
-    @State private var showBirthDataInput = false
-    
-    var body: some View {
-        NavigationView {
-            Group {
-                if viewModel.isLoading {
-                    VStack(spacing: 20) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                        Text("Рассчитываем вашу натальную карту...")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                } else if !viewModel.hasBirthData {
-                    VStack(spacing: 30) {
-                        Image(systemName: "star.circle")
-                            .font(.system(size: 80))
-                            .foregroundColor(.purple.opacity(0.6))
-                        
-                        VStack(spacing: 12) {
-                            Text("Добавьте данные рождения")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                            
-                            Text("Для расчета натальной карты нужны точные данные о дате, времени и месте рождения")
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        
-                        Button("Добавить данные рождения") {
-                            showBirthDataInput = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                        
-                        Spacer()
-                    }
-                    .padding()
-                } else if let chart = viewModel.birthChart {
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            ChartSummaryCard(chart: chart)
-                            PlanetsListView(planets: chart.planets)
-                            AspectsList(aspects: chart.aspects)
-                        }
-                        .padding()
-                    }
-                } else if let errorMessage = viewModel.errorMessage {
-                    VStack(spacing: 20) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 60))
-                            .foregroundColor(.orange)
-                        
-                        Text("Ошибка расчета")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text(errorMessage)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                        
-                        Button("Попробовать снова") {
-                            viewModel.refreshChart()
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                    .padding()
-                }
-            }
-            .navigationTitle("Натальная карта")
-            .toolbar {
-                if viewModel.hasBirthData {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Обновить") {
-                            viewModel.refreshChart()
-                        }
-                    }
-                }
-            }
-            .sheet(isPresented: $showBirthDataInput) {
-                BirthDataInputView()
-                    .onDisappear {
-                        viewModel.loadBirthData()
-                    }
-            }
-        }
     }
 }
 
@@ -379,42 +249,6 @@ struct PlanetsListView: View {
     }
 }
 
-struct PlanetCard: View {
-    let planet: Planet
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(planet.type.symbol)
-                    .font(.title2)
-                Text(planet.type.displayName)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                Spacer()
-                if planet.isRetrograde {
-                    Text("R")
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                        .padding(2)
-                        .background(Color.orange.opacity(0.2))
-                        .cornerRadius(3)
-                }
-            }
-            
-            Text("\(planet.zodiacSign.symbol) \(planet.zodiacSign.displayName)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Text("Дом \(planet.house)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-    }
-}
 
 struct AspectsList: View {
     let aspects: [Aspect]
@@ -458,126 +292,3 @@ struct AspectRow: View {
     }
 }
 
-struct SocialView: View {
-    var body: some View {
-        NavigationView {
-            VStack {
-                Text("Друзья и совместимость")
-                    .font(.title)
-                Spacer()
-            }
-            .navigationTitle("Друзья")
-        }
-    }
-}
-
-struct MindfulnessView: View {
-    var body: some View {
-        NavigationView {
-            VStack {
-                Text("Медитации и практики")
-                    .font(.title)
-                Spacer()
-            }
-            .navigationTitle("Практики")
-        }
-    }
-}
-
-struct ProfileView: View {
-    @EnvironmentObject var appCoordinator: AppCoordinator
-    @State private var showBirthDataInput = false
-    @State private var savedBirthData: BirthData?
-    
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 30) {
-                // Аватар
-                Image(systemName: "person.circle.fill")
-                    .font(.system(size: 100))
-                    .foregroundColor(.purple.opacity(0.6))
-                
-                VStack(spacing: 8) {
-                    Text("Пользователь")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    
-                    Text("Базовый план")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                // Секция данных рождения
-                VStack(spacing: 12) {
-                    if let birthData = savedBirthData {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("📍 Данные рождения")
-                                .font(.headline)
-                            
-                            Text("\(birthData.date.formatted(date: .abbreviated, time: .shortened))")
-                                .font(.subheadline)
-                            
-                            Text("\(birthData.cityName), \(birthData.countryName)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            
-                            if !birthData.isTimeExact {
-                                Text("⏰ Время приблизительное")
-                                    .font(.caption)
-                                    .foregroundColor(.orange)
-                            }
-                        }
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
-                        
-                        Button("Изменить данные рождения") {
-                            showBirthDataInput = true
-                        }
-                        .buttonStyle(.bordered)
-                    } else {
-                        Button("Добавить данные рождения") {
-                            showBirthDataInput = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                }
-                
-                // Другие кнопки настроек
-                VStack(spacing: 12) {
-                    Button("Настройки уведомлений") {
-                        // TODO
-                    }
-                    .buttonStyle(.bordered)
-                    
-                    Button("Пройти онбординг заново") {
-                        UserDefaults.standard.set(false, forKey: "onboarding_completed")
-                        appCoordinator.startOnboarding()
-                    }
-                    .buttonStyle(.bordered)
-                }
-                
-                Spacer()
-            }
-            .padding()
-            .navigationTitle("Профиль")
-            .onAppear {
-                loadBirthData()
-            }
-            .sheet(isPresented: $showBirthDataInput) {
-                BirthDataInputView()
-                    .onDisappear {
-                        // Обновляем данные при закрытии модала
-                        loadBirthData()
-                    }
-            }
-        }
-    }
-    
-    private func loadBirthData() {
-        if let data = UserDefaults.standard.data(forKey: "user_birth_data"),
-           let birthData = try? JSONDecoder().decode(BirthData.self, from: data) {
-            savedBirthData = birthData
-        }
-    }
-}

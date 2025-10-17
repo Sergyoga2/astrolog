@@ -19,6 +19,12 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         
         return BirthChart(
             userId: "user_123",
+            name: "Birth Chart",
+            birthDate: birthData.date,
+            birthTime: DateFormatter.localizedString(from: birthData.date, dateStyle: .none, timeStyle: .short),
+            location: "\(birthData.cityName), \(birthData.countryName)",
+            latitude: birthData.latitude,
+            longitude: birthData.longitude,
             planets: planets,
             houses: houses,
             aspects: aspects
@@ -33,10 +39,14 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         return DailyHoroscope(
             date: date,
             sunSign: sunSign,
+            summary: template.general.components(separatedBy: ". ").first ?? template.general,
+            detailedForecast: template.general,
             generalForecast: template.general,
             loveAndRelationships: template.love,
             careerAndFinances: template.career,
             healthAndEnergy: template.health,
+            energyLevel: Int.random(in: 1...10),
+            keyThemes: generateKeyThemes(for: sunSign),
             luckyNumbers: generateLuckyNumbers(),
             luckyColors: generateLuckyColors(for: sunSign),
             advice: template.advice
@@ -78,21 +88,25 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         return [
             Transit(
                 planet: .venus,
+                sign: .taurus,
                 aspectType: .trine,
                 natalPlanet: .sun,
                 startDate: Date(),
                 endDate: Calendar.current.date(byAdding: .day, value: 15, to: Date()) ?? Date(),
                 description: "Венера образует тригон к вашему натальному Солнцу",
-                influence: "Период гармонии в отношениях и творческого вдохновения"
+                influence: "Период гармонии в отношениях и творческого вдохновения",
+                influenceLevel: 4
             ),
             Transit(
                 planet: .mars,
+                sign: .aries,
                 aspectType: .square,
                 natalPlanet: .mercury,
                 startDate: Date(),
                 endDate: Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date(),
                 description: "Марс образует квадрат к вашему Меркурию",
-                influence: "Возможны конфликты в общении, будьте осторожны с словами"
+                influence: "Возможны конфликты в общении, будьте осторожны с словами",
+                influenceLevel: 3
             )
         ]
     }
@@ -269,5 +283,14 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
     private func generateLuckyColors(for sign: ZodiacSign) -> [String] {
         let colors = ["Красный", "Синий", "Зеленый", "Золотой", "Серебряный", "Фиолетовый"]
         return Array(colors.shuffled().prefix(3))
+    }
+
+    private func generateKeyThemes(for sign: ZodiacSign) -> [String] {
+        let allThemes = [
+            "Творчество", "Любовь", "Карьера", "Здоровье", "Финансы",
+            "Семья", "Дружба", "Путешествия", "Обучение", "Медитация",
+            "Интуиция", "Общение", "Спорт", "Искусство", "Природа"
+        ]
+        return Array(allThemes.shuffled().prefix(Int.random(in: 2...4)))
     }
 }

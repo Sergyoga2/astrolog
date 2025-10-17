@@ -10,7 +10,11 @@ import SwiftUI
 // MARK: - Animated Starfield Background
 struct StarfieldBackground: View {
     @State private var animationPhase: CGFloat = 0
-    let starCount: Int = 150
+    @StateObject private var performanceManager = CosmicPerformanceManager.shared
+
+    var starCount: Int {
+        performanceManager.starFieldDensity.starCount
+    }
     
     var body: some View {
         ZStack {

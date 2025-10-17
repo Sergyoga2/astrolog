@@ -46,7 +46,7 @@ struct BirthDataInputView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             TextField("Город (например: Moscow)", text: $viewModel.cityName)
-                                .onChange(of: viewModel.cityName) { _, newValue in
+                                .onChange(of: viewModel.cityName) { newValue in
                                     viewModel.searchLocation(for: newValue)
                                 }
                             
@@ -183,7 +183,7 @@ struct BirthDataInputView: View {
             .sheet(isPresented: $viewModel.showTimeInfoSheet) {
                 TimeInfoSheet()
             }
-            .onChange(of: viewModel.isSaved) { _, saved in
+            .onChange(of: viewModel.isSaved) { saved in
                 if saved {
                     dismiss()
                 }

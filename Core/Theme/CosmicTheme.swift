@@ -23,6 +23,7 @@ extension Color {
     static let neonPink = Color(hex: "ff4081")
     static let neonBlue = Color(hex: "448aff")
     static let neonCyan = Color(hex: "18ffff")
+    static let neonGreen = Color(hex: "00ff88")
     
     // Звездные оттенки
     static let starWhite = Color(hex: "fafafa")

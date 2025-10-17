@@ -1,154 +1,144 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2822
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 .SFNS-Regular_wdth_opsz110000_GRAD_wght1770000;\f1\fnil\fcharset0 .SFNS-Regular_wdth_opsz110000_GRAD_wght1C20000;}
-{\colortbl;\red255\green255\blue255;\red255\green255\blue255;\red255\green255\blue255;\red227\green227\blue220;
-}
-{\*\expandedcolortbl;;\cssrgb\c100000\c100000\c99985;\cssrgb\c100000\c100000\c100000\c0;\cssrgb\c91247\c91242\c88940;
-}
-{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
-{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}
-{\list\listtemplateid3\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid201\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid3}
-{\list\listtemplateid4\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid301\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid4}
-{\list\listtemplateid5\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid401\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid5}
-{\list\listtemplateid6\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid501\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid6}
-{\list\listtemplateid7\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid601\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid7}}
-{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}{\listoverride\listid3\listoverridecount0\ls3}{\listoverride\listid4\listoverridecount0\ls4}{\listoverride\listid5\listoverridecount0\ls5}{\listoverride\listid6\listoverridecount0\ls6}{\listoverride\listid7\listoverridecount0\ls7}}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
-\deftab720
-\pard\pardeftab720\sa120\partightenfactor0
+# CLAUDE.md
 
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \cb3 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 project: Astrolog\uc0\u8232 platform: iOS\u8232 minimum_ios: 16.0\u8232 languages: Swift, SwiftUI, UIKit, Combine\u8232 design_patterns: MVVM, Coordinator, Repository, Dependency Injection\u8232 stateless_ui: true\u8232 repository_structure: Feature-first, Core isolation\
-\pard\pardeftab720\sa120\partightenfactor0
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-\f1\fs27 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 Description\
-\pard\pardeftab720\sa120\partightenfactor0
+## Project Overview
 
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 AstroWise is an iOS application for astrology, cosmic mindfulness, and social features. Key modules: birth chart calculator (SwissEphemeris C library, fallback AstrologyAPI), daily forecasts, social compatibility, meditation library, subscription monetization (PRO/GURU).\
-\pard\pardeftab720\sa120\partightenfactor0
+**AstroWise** is an iOS astrology application built with Swift and SwiftUI, targeting iOS 16.0+. The app provides birth chart calculations, daily forecasts, social compatibility features, meditation library, and subscription-based monetization.
 
-\f1\fs27 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 Key Dependencies\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa120\partightenfactor0
-\ls1\ilvl0
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 swiss_ephemeris: C library via Swift bridging header, all astrology logic\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 astrology_api: SaaS fallback for cloud ephemeris\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 charts: Apple Charts for visual data\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 lottie: vector animations for UI\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 avfoundation: audio/video for meditations and media\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 core_data, cloudkit: local/offline-first storage and iCloud sync\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 firestore, supabase (postgresql, edge functions): cloud data, real-time sync, user-level security\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 revenuecat, storekit_2: subscriptions, billing, purchase validation, webhooks\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 onesignal, fcm, apple_push: push notifications, scalable triggers, deep links\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 mixpanel, amplitude: analytics, user journeys, funnel\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 sentry, firebase_analytics: crash tracking and performance\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 fastlane, github_actions: CI/CD pipelines\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 testflight, app_store: beta and production deployments\
-\ls1\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 lokalise: localization, English/Russian/Spanish default\
-\pard\pardeftab720\sa120\partightenfactor0
+## Architecture
 
-\f1\fs27 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 Core Architecture\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa120\partightenfactor0
-\ls2\ilvl0
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Project modules by feature, every module with a README.\
-\ls2\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 All business logic in /Core layer only.\
-\ls2\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 View-to-ViewModel via MVVM pattern, only stateless Views permitted.\
-\ls2\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Coordinators handle all navigation.\
-\ls2\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Repository classes abstract API/local/cloud/database.\
-\ls2\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Dependency Injection mandatory for all services.\
-\pard\pardeftab720\sa120\partightenfactor0
+### Core Design Patterns
+- **MVVM**: View-to-ViewModel binding with ObservableObject
+- **Coordinator Pattern**: Navigation handled by dedicated coordinators
+- **Repository Pattern**: Data access abstraction layer
+- **Dependency Injection**: Mandatory for all services
+- **Stateless Views**: All state managed in ViewModels
 
-\f1\fs27 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 Code Style\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa120\partightenfactor0
-\ls3\ilvl0
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 camelCase for variables/methods.\
-\ls3\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Do not hardcode strings; use en.lproj, ru.lproj, es.lproj.\
-\ls3\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Use SwiftLint and SwiftGen; default strict mode.\
-\ls3\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Update CHANGELOG.md for every public API change.\
-\pard\pardeftab720\sa120\partightenfactor0
+### Project Structure
+```
+├── App/                    # Application entry point, main coordinator
+├── Core/                   # Business logic, models, services, themes
+│   ├── Models/            # Data models (BirthChart, User, etc.)
+│   ├── Services/          # Business services (SwissEphemeris, Subscription)
+│   ├── Components/        # Reusable UI components
+│   └── Theme/             # Cosmic theme and view modifiers
+├── Features/              # Feature-based modules
+│   ├── Onboarding/        # User onboarding flow
+│   ├── Chart/             # Birth chart display and calculation
+│   ├── Profile/           # User profile and settings
+│   ├── Main/              # Home/today view
+│   └── Subscription/      # Premium features management
+├── AstrologTests/         # Unit tests
+└── AstrologUITests/       # UI automation tests
+```
 
-\f1\fs27 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 Workflows\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa120\partightenfactor0
-\ls4\ilvl0
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Onboarding: splash, permissions, birth info collection (date, time, city).\
-\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Chart generation: SwissEphemeris -> AstrologyAPI fallback.\
-\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Home: daily forecast, status, shortcuts.\
-\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Chart: interactive natal chart, detailed report, PDF export.\
-\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Social: add friend, compare charts, share compatibility.\
-\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Mindfulness: meditations sorted by mood/astro events.\
-\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Profile: settings, backup, privacy, subscription management.\
-\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Subscriptions: PRO/GURU unlock advanced features.\
-\ls4\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Notifications: through OneSignal, FCM, Apple.\
-\pard\pardeftab720\sa120\partightenfactor0
+## Development Commands
 
-\f1\fs27 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 Security & Privacy\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa120\partightenfactor0
-\ls5\ilvl0
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 All personal data (birth info) encrypted on-device and in-cloud.\
-\ls5\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Secure Keychain for credentials and secrets.\
-\ls5\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 SSL pinning for all API endpoints.\
-\ls5\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 All Apple/iOS privacy requirements strictly enforced.\
-\pard\pardeftab720\sa120\partightenfactor0
+### Building and Running
+```bash
+# Build the project
+xcodebuild -project Astrolog.xcodeproj -scheme Astrolog -configuration Debug build
 
-\f1\fs27 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 Release and Deploy\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa120\partightenfactor0
-\ls6\ilvl0
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Tests: Xcode unit/UI tests required for all features.\
-\ls6\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 CI: Fastlane for builds, screenshots, releases.\
-\ls6\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 All deployments via App Store Connect/TestFlight.\
-\ls6\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 All strings and assets localized by Lokalise workflow.\
-\pard\pardeftab720\sa120\partightenfactor0
+# Run tests
+xcodebuild -project Astrolog.xcodeproj -scheme Astrolog -destination 'platform=iOS Simulator,name=iPhone 15' test
 
-\f1\fs27 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \strokec4 Directives for Claude Code\
-\pard\tx220\tx720\pardeftab720\li720\fi-720\sa120\partightenfactor0
-\ls7\ilvl0
-\f0\fs32 \AppleTypeServices\AppleTypeServicesF65539 \cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Follow MVVM, Coordinator, Repository everywhere.\
-\ls7\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Always use SwissEphemeris for calculations, fallback to AstrologyAPI if needed.\
-\ls7\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Any new feature: draft user flow \uc0\u8594  feature documentation \u8594  implement new module.\
-\ls7\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 Run all tests before committing.\
-\ls7\ilvl0\cf2 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\cf2 \expnd0\expndtw0\kerning0
-\outl0\strokewidth0 \strokec4 All backend/cloud keys in .env only, never hardcoded.\
-}
+# Run specific test
+xcodebuild -project Astrolog.xcodeproj -scheme Astrolog -destination 'platform=iOS Simulator,name=iPhone 15' -only-testing:AstrologTests/TestClassName/testMethodName test
+```
+
+### Opening in Xcode
+```bash
+open Astrolog.xcodeproj
+```
+
+### SwiftLint (if configured)
+```bash
+swiftlint lint
+swiftlint --fix
+```
+
+## Key Dependencies
+
+### Core Libraries
+- **SwissEphemeris**: Swiss Ephemeris C library (v0.0.99) for precise astrology calculations
+- **SwiftUI/UIKit**: Native iOS UI frameworks
+- **Combine**: Reactive programming for data binding
+- **Foundation**: Core iOS framework
+
+### Planned Integrations
+- **Charts**: Apple Charts framework for data visualization
+- **Lottie**: Vector animations for enhanced UI
+- **Core Data + CloudKit**: Local storage with iCloud sync
+- **RevenueCat/StoreKit 2**: Subscription management
+- **OneSignal/FCM**: Push notifications
+
+## Astrology Calculation Flow
+
+1. **Primary**: SwissEphemeris library via bridging header
+2. **Fallback**: AstrologyAPI for cloud-based calculations
+3. **Mock**: Enhanced mock service for development/testing
+
+The `AstrologyServiceProtocol` abstracts the calculation backend, allowing seamless switching between implementations.
+
+## Navigation Architecture
+
+- `AppCoordinator`: Main app flow coordinator (onboarding → main → subscription)
+- `OnboardingCoordinator`: Handles user setup flow
+- All navigation state managed through `@Published` properties
+- Deep linking support for notifications and social features
+
+## Code Style Guidelines
+
+- **Naming**: camelCase for variables/methods, PascalCase for types
+- **Localization**: No hardcoded strings; use `.lproj` files (en/ru/es)
+- **SwiftLint**: Strict mode compliance required
+- **Documentation**: Update CHANGELOG.md for public API changes
+
+## Testing Strategy
+
+- **Unit Tests**: All service layer logic in `AstrologTests/`
+- **UI Tests**: User flow validation in `AstrologUITests/`
+- **Required**: All tests must pass before commits
+- **Architecture**: Test ViewModels and Services, not Views directly
+
+## Security Requirements
+
+- **Birth Data**: Encrypted on-device and in cloud storage
+- **Secrets**: Keychain storage for credentials, .env for development keys
+- **API**: SSL pinning for all network endpoints
+- **Privacy**: Full iOS privacy compliance (location, notifications)
+
+## Development Workflows
+
+### Feature Development
+1. Draft user flow documentation
+2. Create feature module in `Features/`
+3. Implement MVVM components (View → ViewModel → Service)
+4. Add unit tests for business logic
+5. Update coordinator for navigation
+6. Run full test suite
+
+### Astrology Features
+- Always use SwissEphemeris as primary calculation method
+- Implement AstrologyAPI fallback for network-dependent features
+- Mock services available for rapid prototyping
+- All birth chart data must be validated and sanitized
+
+### Release Process
+- Fastlane automation for builds and screenshots
+- TestFlight for beta testing
+- App Store Connect for production releases
+- Lokalise workflow for string localization
+
+## Important Files
+- `Core/Services/SwissEphemerisService.swift`: Primary astrology calculations
+- `App/AppCoordinator.swift`: Main navigation coordinator
+- `Core/Models/BirthChart.swift`: Core data model for birth charts
+- Individual feature ViewModels follow naming pattern: `{Feature}ViewModel.swift`
+
+## Development Notes
+- Minimum iOS 16.0 deployment target
+- SwiftUI-first approach with UIKit bridging where needed
+- Offline-first architecture with cloud sync capabilities
+- Subscription tiers: Free → PRO → GURU with progressive feature unlocking
