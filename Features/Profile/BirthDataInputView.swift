@@ -168,7 +168,7 @@ struct BirthDataInputView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Отмена") {
+                    CosmicBackButton {
                         dismiss()
                     }
                 }

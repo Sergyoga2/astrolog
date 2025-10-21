@@ -18,36 +18,55 @@ class GlobalCitySearchService {
     func searchCities(query: String, limit: Int = 10) async -> [CityResult] {
         guard !query.isEmpty, query.count >= 2 else { return [] }
 
-        // 1. Сначала ищем в популярных городах для быстрого доступа
-        let popularResults = searchInPopularCities(query: query)
+        do {
 
-        // 2. Если нашли точные совпадения в популярных городах, возвращаем их
-        if let exactMatch = popularResults.first(where: {
-            $0.name.localizedCaseInsensitiveCompare(query) == .orderedSame
+        // 1. ПРИОРИТЕТ OpenStreetMap: Ищем сначала в самом полном источнике
+        let nominatimResults = await searchWithNominatim(query: query, limit: limit)
+        print("🗺️ OpenStreetMap search for '\(query)' found \(nominatimResults.count) results")
+
+        // 2. УМНЫЙ РАННИЙ ВЫХОД: Если OpenStreetMap нашел точное совпадение - возвращаем только его!
+        if let exactMatch = nominatimResults.first(where: {
+            let normalizedName = $0.name.components(separatedBy: " (").first ?? $0.name
+            let isExactMatch = normalizedName.localizedCaseInsensitiveCompare(query) == .orderedSame
+            print("  - Checking OSM '\(normalizedName)': exactMatch=\(isExactMatch)")
+            return isExactMatch
         }) {
-            var results = [exactMatch]
-            results.append(contentsOf: popularResults.filter { $0.id != exactMatch.id })
-            return Array(results.prefix(limit))
+            print("🎯 OSM early exit: Found exact match for '\(query)': \(exactMatch.name)")
+            return [exactMatch]
         }
 
-        // 3. Параллельный поиск в нескольких источниках
-        async let nominatimResults = searchWithNominatim(query: query, limit: limit)
+        // 3. Если OpenStreetMap не нашел точного совпадения, используем другие источники
+        print("🔍 OSM fallback: No exact match in OpenStreetMap, trying other sources...")
+
+        // 4. Запускаем остальные источники параллельно
+        let popularResults = searchInPopularCities(query: query)
         async let geonamesResults = searchWithGeonames(query: query, limit: limit)
         async let appleResults = searchWithAppleGeocoder(query: query)
 
-        // 4. Объединяем результаты
-        let allResults = await [
+        // 5. Объединяем результаты из всех источников
+        var allResults = await [
+            nominatimResults, // Включаем результаты OSM (но без точного совпадения)
             popularResults,
-            nominatimResults,
             geonamesResults,
             appleResults
         ].flatMap { $0 }
 
-        // 5. Удаляем дубликаты и сортируем по релевантности
+        // 6. Если результатов мало, попробуем дополнительные стратегии поиска
+        if allResults.count < max(3, limit / 2) {
+            let fallbackResults = await searchWithFallbackStrategies(query: query, limit: limit)
+            allResults.append(contentsOf: fallbackResults)
+        }
+
+        // 7. Удаляем дубликаты и сортируем по релевантности
         let uniqueResults = removeDuplicates(from: allResults)
         let sortedResults = sortByRelevance(results: uniqueResults, query: query)
 
         return Array(sortedResults.prefix(limit))
+        } catch {
+            print("Global city search error: \(error)")
+            // В случае ошибки возвращаем хотя бы популярные города
+            return Array(searchInPopularCities(query: query).prefix(limit))
+        }
     }
 }
 
@@ -100,9 +119,9 @@ struct CityResult: Identifiable, Hashable {
 private extension GlobalCitySearchService {
     func searchInPopularCities(query: String) -> [CityResult] {
         let popularCities: [CityResult] = [
-            // Россия
-            CityResult(name: "Moscow", country: "Russia", latitude: 55.7558, longitude: 37.6173, population: 12506468, timeZoneId: "Europe/Moscow", importance: 1.0),
-            CityResult(name: "Saint Petersburg", country: "Russia", latitude: 59.9311, longitude: 30.3609, population: 5351935, timeZoneId: "Europe/Moscow", importance: 0.9),
+            // Россия (русские названия)
+            CityResult(name: "Москва", country: "Russia", latitude: 55.7558, longitude: 37.6173, population: 12506468, timeZoneId: "Europe/Moscow", importance: 1.0),
+            CityResult(name: "Санкт-Петербург", country: "Russia", latitude: 59.9311, longitude: 30.3609, population: 5351935, timeZoneId: "Europe/Moscow", importance: 0.9),
             CityResult(name: "Novosibirsk", country: "Russia", latitude: 55.0084, longitude: 82.9357, population: 1618039, timeZoneId: "Asia/Novosibirsk", importance: 0.7),
             CityResult(name: "Yekaterinburg", country: "Russia", latitude: 56.8431, longitude: 60.6454, population: 1495066, timeZoneId: "Asia/Yekaterinburg", importance: 0.7),
             CityResult(name: "Nizhny Novgorod", country: "Russia", latitude: 56.2965, longitude: 43.9361, population: 1252236, timeZoneId: "Europe/Moscow", importance: 0.6),
@@ -172,18 +191,25 @@ private extension GlobalCitySearchService {
 
 private extension GlobalCitySearchService {
 
-    // OpenStreetMap Nominatim API - бесплатный, хороший охват
+    // OpenStreetMap Nominatim API - ЛЮБЫЕ населенные пункты
     func searchWithNominatim(query: String, limit: Int) async -> [CityResult] {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             return []
         }
 
-        let urlString = "https://nominatim.openstreetmap.org/search?q=\(encodedQuery)&format=json&limit=\(limit)&addressdetails=1&featureType=city,town,village&accept-language=en"
+        // МАКСИМАЛЬНО РАСШИРЕННЫЙ поиск: города, поселки, деревни, хутора, фермы, станции, дачные поселки и т.д.
+        // ПРИОРИТЕТ РУССКОГО ЯЗЫКА: ru,en вместо en,ru
+        let urlString = "https://nominatim.openstreetmap.org/search?q=\(encodedQuery)&format=json&limit=\(limit)&addressdetails=1&class=place&type=city,town,village,hamlet,suburb,neighbourhood,isolated_dwelling,farm,locality,allotments,borough,city_block,district,municipality,quarter,square&accept-language=ru,en"
 
         guard let url = URL(string: urlString) else { return [] }
 
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            // Добавляем User-Agent для лучшей совместимости
+            var request = URLRequest(url: url)
+            request.setValue("AstrologApp/1.0", forHTTPHeaderField: "User-Agent")
+            request.setValue("1", forHTTPHeaderField: "limit")
+
+            let (data, _) = try await URLSession.shared.data(for: request)
             let jsonArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] ?? []
 
             return jsonArray.compactMap { item in
@@ -194,26 +220,48 @@ private extension GlobalCitySearchService {
                 }
 
                 let components = displayName.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-                let cityName = components.first ?? "Unknown"
+
+                // Попробуем получить русское название из разных полей OSM
+                var placeName = components.first ?? "Unknown"
+
+                // OSM может вернуть русское название в разных полях
+                if let nameRu = item["name:ru"] as? String, !nameRu.isEmpty {
+                    placeName = nameRu
+                } else if let name = item["name"] as? String, !name.isEmpty {
+                    placeName = name
+                }
+
                 let country = components.last ?? "Unknown"
 
-                // Получаем важность из OSM
+                // Получаем тип населенного пункта
+                let placeType = item["type"] as? String ?? "city"
+                let _ = item["class"] as? String ?? "place" // Для будущего использования
+
+                // Получаем важность из OSM (для малых населенных пунктов может быть очень низкой)
                 let importance = item["importance"] as? Double ?? 0.0
 
-                // Пытаемся определить штат/область
+                // Определяем административные единицы
                 var state: String? = nil
-                if components.count > 2 {
+                if let address = item["address"] as? [String: Any] {
+                    state = address["state"] as? String ??
+                           address["region"] as? String ??
+                           address["province"] as? String ??
+                           address["county"] as? String
+                } else if components.count > 2 {
                     state = components[components.count - 2]
                 }
 
+                // Генерируем описательный тип места
+                let localizedType = localizeePlaceType(placeType)
+
                 return CityResult(
-                    name: String(cityName),
+                    name: "\(placeName) (\(localizedType))",
                     country: String(country),
                     state: state,
                     latitude: lat,
                     longitude: lon,
                     timeZoneId: nil, // Nominatim не предоставляет timezone
-                    importance: importance
+                    importance: max(importance, 0.01) // Минимальная важность для мелких мест
                 )
             }
         } catch {
@@ -222,7 +270,30 @@ private extension GlobalCitySearchService {
         }
     }
 
-    // GeoNames API - очень подробная база данных (требует регистрации для prod)
+    // Переводим типы населенных пунктов на русский
+    private func localizeePlaceType(_ type: String) -> String {
+        switch type.lowercased() {
+        case "city": return "город"
+        case "town": return "город"
+        case "village": return "село"
+        case "hamlet": return "деревня"
+        case "suburb": return "район"
+        case "neighbourhood": return "микрорайон"
+        case "isolated_dwelling": return "хутор"
+        case "farm": return "ферма"
+        case "locality": return "местность"
+        case "allotments": return "дачный поселок"
+        case "borough": return "район"
+        case "city_block": return "квартал"
+        case "district": return "округ"
+        case "municipality": return "муниципалитет"
+        case "quarter": return "квартал"
+        case "square": return "площадь"
+        default: return "населённый пункт"
+        }
+    }
+
+    // GeoNames API - ВСЕ населенные пункты (даже самые маленькие)
     func searchWithGeonames(query: String, limit: Int) async -> [CityResult] {
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             return []
@@ -230,48 +301,182 @@ private extension GlobalCitySearchService {
 
         // Используем демо username для тестирования (в проде нужен настоящий)
         let username = "demo" // В продакшене заменить на реальный username
-        let urlString = "http://api.geonames.org/searchJSON?q=\(encodedQuery)&maxRows=\(limit)&cities=cities5000&username=\(username)"
 
-        guard let url = URL(string: urlString) else { return [] }
+        // Делаем РАСШИРЕННЫЕ запросы для максимального покрытия всех типов населенных пунктов
+        let searchQueries = [
+            // 1. ВСЕ населенные пункты (включая самые мелкие деревни, хутора, фермы)
+            "https://secure.geonames.org/searchJSON?q=\(encodedQuery)&maxRows=\(limit)&featureClass=P&username=\(username)&orderby=relevance",
 
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            // 2. Поиск по точному совпадению без ограничений по типу
+            "https://secure.geonames.org/searchJSON?name_equals=\(encodedQuery)&maxRows=\(limit)&featureClass=P&username=\(username)",
 
-            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let geonames = json["geonames"] as? [[String: Any]] {
+            // 3. Поиск административных центров всех уровней
+            "https://secure.geonames.org/searchJSON?q=\(encodedQuery)&maxRows=\(limit)&featureCode=PPLA,PPLA2,PPLA3,PPLA4,PPLC&username=\(username)",
 
-                return geonames.compactMap { item in
-                    guard let name = item["name"] as? String,
-                          let country = item["countryName"] as? String,
-                          let lat = item["lat"] as? Double,
-                          let lon = item["lng"] as? Double else {
-                        return nil
+            // 4. Поиск ВСЕХ типов поселений (включая фермы, хутора, изолированные жилища)
+            "https://secure.geonames.org/searchJSON?q=\(encodedQuery)&maxRows=\(limit)&featureCode=PPL,PPLF,PPLH,PPLL,PPLS&username=\(username)",
+
+            // 5. Поиск с нечетким совпадением для учета опечаток
+            "https://secure.geonames.org/searchJSON?name_startsWith=\(encodedQuery)&maxRows=\(min(limit, 5))&featureClass=P&username=\(username)"
+        ]
+
+        var allResults: [CityResult] = []
+
+        for (index, urlString) in searchQueries.enumerated() {
+            guard let url = URL(string: urlString) else { continue }
+
+            do {
+                let (data, _) = try await URLSession.shared.data(from: url)
+
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let geonames = json["geonames"] as? [[String: Any]] {
+
+                    let results = geonames.compactMap { item -> CityResult? in
+                        guard let name = item["name"] as? String,
+                              let country = item["countryName"] as? String,
+                              let lat = item["lat"] as? Double,
+                              let lon = item["lng"] as? Double else {
+                            return nil
+                        }
+
+                        let population = item["population"] as? Int
+                        let state = item["adminName1"] as? String
+                        let timezoneId = (item["timezone"] as? [String: Any])?["timeZoneId"] as? String
+
+                        // Получаем код типа населенного пункта для классификации
+                        let featureCode = item["fcode"] as? String ?? ""
+                        let localizedType = localizeGeonamesFeatureCode(featureCode)
+
+                        // Рассчитываем важность на основе населения, типа и источника запроса
+                        var importance = 0.05 // Базовая важность для любого места
+                        if let pop = population, pop > 0 {
+                            importance = min(0.9, Double(pop) / 1_000_000.0)
+                        }
+
+                        // Повышаем важность для административных центров
+                        if featureCode.contains("PPLA") || featureCode == "PPLC" {
+                            importance = max(importance, 0.6)
+                        }
+
+                        // Повышаем важность для точных совпадений
+                        if index == 1 { // name_equals запрос
+                            importance = max(importance, 0.7)
+                        }
+
+                        // Для малых населенных пунктов показываем тип
+                        let shouldShowType = population == nil || population! < 5000 ||
+                                           featureCode.contains("F") || featureCode.contains("H") ||
+                                           featureCode.contains("L")
+
+                        let displayName = shouldShowType ? "\(name) (\(localizedType))" : name
+
+                        return CityResult(
+                            name: displayName,
+                            country: country,
+                            state: state,
+                            latitude: lat,
+                            longitude: lon,
+                            population: population,
+                            timeZoneId: timezoneId,
+                            importance: importance
+                        )
                     }
 
-                    let population = item["population"] as? Int
-                    let state = item["adminName1"] as? String
-                    let timezoneId = (item["timezone"] as? [String: Any])?["timeZoneId"] as? String
-
-                    // Рассчитываем важность на основе населения
-                    let importance = population != nil ? min(1.0, Double(population!) / 10_000_000.0) : 0.1
-
-                    return CityResult(
-                        name: name,
-                        country: country,
-                        state: state,
-                        latitude: lat,
-                        longitude: lon,
-                        population: population,
-                        timeZoneId: timezoneId,
-                        importance: importance
-                    )
+                    allResults.append(contentsOf: results)
                 }
+            } catch {
+                print("GeoNames API error for \(urlString): \(error)")
+                continue
             }
-        } catch {
-            print("GeoNames API error: \(error)")
+
+            // Задержка между запросами для соблюдения лимитов API
+            try? await Task.sleep(nanoseconds: 150_000_000) // 150ms
         }
 
-        return []
+        return allResults
+    }
+
+    // Переводим коды GeoNames на русский язык
+    private func localizeGeonamesFeatureCode(_ code: String) -> String {
+        switch code {
+        case "PPLC": return "столица"
+        case "PPLA": return "областной центр"
+        case "PPLA2": return "районный центр"
+        case "PPLA3": return "местный центр"
+        case "PPLA4": return "сельский центр"
+        case "PPL": return "населённый пункт"
+        case "PPLF": return "ферма"
+        case "PPLH": return "хутор"
+        case "PPLL": return "поселение"
+        case "PPLQ": return "заброшенное место"
+        case "PPLR": return "религиозное поселение"
+        case "PPLS": return "поселения"
+        case "PPLW": return "разрушенный населённый пункт"
+        case "PPLX": return "район"
+        default: return "место"
+        }
+    }
+
+    // Дополнительные стратегии поиска для максимального покрытия
+    func searchWithFallbackStrategies(query: String, limit: Int) async -> [CityResult] {
+        var fallbackResults: [CityResult] = []
+
+        // Стратегия 1: Поиск с измененными окончаниями (для русских названий)
+        let queryVariations = generateQueryVariations(query)
+        for variation in queryVariations.prefix(3) {
+            let variationResults = await searchWithNominatim(query: variation, limit: min(limit, 5))
+            fallbackResults.append(contentsOf: variationResults)
+            if fallbackResults.count >= limit { break }
+        }
+
+        // Стратегия 2: Поиск по частям запроса (если запрос содержит несколько слов)
+        if query.contains(" ") {
+            let words = query.split(separator: " ")
+            for word in words {
+                if word.count >= 3 {
+                    let wordResults = await searchWithNominatim(query: String(word), limit: 3)
+                    fallbackResults.append(contentsOf: wordResults)
+                }
+            }
+        }
+
+        return Array(fallbackResults.prefix(limit))
+    }
+
+    // Генерируем варианты запроса для более широкого поиска
+    private func generateQueryVariations(_ query: String) -> [String] {
+        var variations: [String] = []
+        let lowercased = query.lowercased()
+
+        // Для русских названий: убираем/добавляем типичные окончания
+        let commonEndings = ["ск", "град", "бург", "городок", "село", "деревня"]
+
+        for ending in commonEndings {
+            if lowercased.hasSuffix(ending) {
+                let withoutEnding = String(lowercased.dropLast(ending.count))
+                if withoutEnding.count >= 3 {
+                    variations.append(withoutEnding)
+                }
+            } else if lowercased.count >= 3 {
+                variations.append(lowercased + ending)
+            }
+        }
+
+        // Альтернативные транслитерации
+        let transliterationMap: [String: String] = [
+            "ya": "я", "yu": "ю", "zh": "ж", "ch": "ч", "sh": "ш", "shch": "щ"
+        ]
+
+        for (latin, cyrillic) in transliterationMap {
+            if lowercased.contains(latin) {
+                variations.append(lowercased.replacingOccurrences(of: latin, with: cyrillic))
+            }
+            if lowercased.contains(cyrillic) {
+                variations.append(lowercased.replacingOccurrences(of: cyrillic, with: latin))
+            }
+        }
+
+        return Array(Set(variations)) // Убираем дубликаты
     }
 
     // Apple CLGeocoder - работает на устройстве, но ограничен в симуляторе
@@ -312,46 +517,83 @@ private extension GlobalCitySearchService {
 
 private extension GlobalCitySearchService {
     func removeDuplicates(from results: [CityResult]) -> [CityResult] {
-        var seen = Set<String>()
-        var uniqueResults: [CityResult] = []
+        var cityMap = [String: CityResult]()
 
         for result in results {
-            // Создаем ключ для определения дубликатов (название + страна + приблизительные координаты)
-            let key = "\(result.name.lowercased())_\(result.country.lowercased())_\(Int(result.latitude * 10))_\(Int(result.longitude * 10))"
+            // Нормализуем название города (убираем тип из скобок для сравнения)
+            let normalizedName = result.name.components(separatedBy: " (").first?.lowercased() ?? result.name.lowercased()
+            let key = "\(normalizedName)_\(result.country.lowercased())"
 
-            if !seen.contains(key) {
-                seen.insert(key)
-                uniqueResults.append(result)
+            // Если города еще нет или новый результат лучше
+            if let existing = cityMap[key] {
+                // Приоритет: наличие timeZone > население > важность
+                let shouldReplace = (result.timeZoneId != nil && existing.timeZoneId == nil) ||
+                                   (result.timeZoneId != nil && existing.timeZoneId != nil &&
+                                    ((result.population ?? 0) > (existing.population ?? 0))) ||
+                                   (result.timeZoneId == nil && existing.timeZoneId == nil &&
+                                    result.importance > existing.importance)
+
+                if shouldReplace {
+                    cityMap[key] = result
+                }
+            } else {
+                cityMap[key] = result
             }
         }
 
-        return uniqueResults
+        return Array(cityMap.values)
     }
 
     func sortByRelevance(results: [CityResult], query: String) -> [CityResult] {
         return results.sorted { first, second in
-            // 1. Точное совпадение названия города
-            let firstExactMatch = first.name.localizedCaseInsensitiveCompare(query) == .orderedSame
-            let secondExactMatch = second.name.localizedCaseInsensitiveCompare(query) == .orderedSame
+            // 1. Точное совпадение названия города (без учета типа в скобках)
+            let firstNormalized = first.name.components(separatedBy: " (").first ?? first.name
+            let secondNormalized = second.name.components(separatedBy: " (").first ?? second.name
+
+            let firstExactMatch = firstNormalized.localizedCaseInsensitiveCompare(query) == .orderedSame
+            let secondExactMatch = secondNormalized.localizedCaseInsensitiveCompare(query) == .orderedSame
 
             if firstExactMatch != secondExactMatch {
                 return firstExactMatch
             }
 
-            // 2. Начинается ли название с поискового запроса
-            let firstStartsWithQuery = first.name.localizedCaseInsensitiveHasPrefix(query)
-            let secondStartsWithQuery = second.name.localizedCaseInsensitiveHasPrefix(query)
+            // 2. Среди точных совпадений: приоритет городам с timeZone (полная информация)
+            if firstExactMatch && secondExactMatch {
+                let firstHasTimezone = first.timeZoneId != nil
+                let secondHasTimezone = second.timeZoneId != nil
+
+                if firstHasTimezone != secondHasTimezone {
+                    return firstHasTimezone
+                }
+
+                // Среди точных совпадений с timezone: приоритет по важности
+                if first.importance != second.importance {
+                    return first.importance > second.importance
+                }
+            }
+
+            // 3. Приоритет городам с timeZone среди остальных
+            let firstHasTimezone = first.timeZoneId != nil
+            let secondHasTimezone = second.timeZoneId != nil
+
+            if firstHasTimezone != secondHasTimezone {
+                return firstHasTimezone
+            }
+
+            // 4. Начинается ли название с поискового запроса
+            let firstStartsWithQuery = firstNormalized.localizedCaseInsensitiveHasPrefix(query)
+            let secondStartsWithQuery = secondNormalized.localizedCaseInsensitiveHasPrefix(query)
 
             if firstStartsWithQuery != secondStartsWithQuery {
                 return firstStartsWithQuery
             }
 
-            // 3. Важность города (население, значимость)
+            // 5. Важность города (население, значимость)
             if first.importance != second.importance {
                 return first.importance > second.importance
             }
 
-            // 4. Население (если есть)
+            // 6. Население (если есть)
             let firstPop = first.population ?? 0
             let secondPop = second.population ?? 0
 
@@ -359,7 +601,7 @@ private extension GlobalCitySearchService {
                 return firstPop > secondPop
             }
 
-            // 5. Алфавитный порядок
+            // 7. Алфавитный порядок
             return first.name < second.name
         }
     }

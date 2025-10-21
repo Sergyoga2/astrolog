@@ -22,7 +22,7 @@ class FirebaseService: ObservableObject {
     // Firebase configuration is now handled in AstrologApp.swift
 
     private func setupAuthListener() {
-        auth.addStateDidChangeListener { [weak self] _, user in
+        _ = auth.addStateDidChangeListener { [weak self] _, user in
             Task { @MainActor in
                 self?.currentUser = user
                 self?.isAuthenticated = user != nil

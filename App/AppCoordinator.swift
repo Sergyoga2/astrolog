@@ -12,7 +12,8 @@ import Combine
 final class AppCoordinator: ObservableObject {
     @Published var currentFlow: AppFlow = .onboarding
     @Published var isLoading = false
-    
+    @Published var selectedMainTab: Int = 0
+
     enum AppFlow: CaseIterable {
         case onboarding
         case main
@@ -22,6 +23,17 @@ final class AppCoordinator: ObservableObject {
     init() {
         if UserDefaults.standard.bool(forKey: "onboarding_completed") {
             currentFlow = .main
+        }
+
+        // Подписываемся на уведомления о навигации к карте
+        NotificationCenter.default.addObserver(
+            forName: .navigateToChart,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.navigateToChartTab()
+            }
         }
     }
     
@@ -36,5 +48,10 @@ final class AppCoordinator: ObservableObject {
     
     func showSubscription() {
         currentFlow = .subscription
+    }
+
+    func navigateToChartTab() {
+        currentFlow = .main
+        selectedMainTab = 1 // Таб "Карта"
     }
 }

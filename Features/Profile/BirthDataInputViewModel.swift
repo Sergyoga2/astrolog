@@ -9,6 +9,10 @@ import Foundation
 import CoreLocation
 import Combine
 
+extension Notification.Name {
+    static let navigateToChart = Notification.Name("navigateToChart")
+}
+
 @MainActor
 class BirthDataInputViewModel: ObservableObject {
     @Published var birthDate = Date()
@@ -29,6 +33,7 @@ class BirthDataInputViewModel: ObservableObject {
     private let geocoder = CLGeocoder()
     private let globalCitySearch = GlobalCitySearchService.shared
     private var searchTask: Task<Void, Never>?
+    private var isSelectingLocation = false
     
     var hasCoordinates: Bool {
         latitude != 0 && longitude != 0
@@ -66,7 +71,8 @@ class BirthDataInputViewModel: ObservableObject {
     ]
     
     func searchLocation(for city: String) {
-        guard !city.isEmpty else {
+        // Не запускаем поиск, если пользователь выбирает город из результатов
+        guard !city.isEmpty, !isSelectingLocation else {
             locationSuggestions = []
             showingSuggestions = false
             return
@@ -84,8 +90,14 @@ class BirthDataInputViewModel: ObservableObject {
                 // Небольшая задержка для debouncing
                 try await Task.sleep(nanoseconds: 200_000_000) // 200ms
 
+                // Проверяем, не был ли Task отменен
+                guard !Task.isCancelled else { return }
+
                 // Используем глобальный поиск городов
                 let cityResults = await globalCitySearch.searchCities(query: city, limit: 15)
+
+                // Проверяем, не был ли Task отменен после получения результатов
+                guard !Task.isCancelled else { return }
 
                 // Преобразуем результаты в LocationSuggestion
                 let suggestions = cityResults.map { cityResult in
@@ -99,6 +111,8 @@ class BirthDataInputViewModel: ObservableObject {
                 }
 
                 await MainActor.run {
+                    guard !Task.isCancelled else { return }
+
                     self.locationSuggestions = suggestions
                     self.showingSuggestions = !suggestions.isEmpty
                     self.isSearchingLocation = false
@@ -111,6 +125,7 @@ class BirthDataInputViewModel: ObservableObject {
                 }
 
             } catch {
+                print("Search error: \(error)")
                 if !Task.isCancelled {
                     await MainActor.run {
                         self.errorMessage = "Произошла ошибка при поиске. Проверьте подключение к интернету."
@@ -123,18 +138,30 @@ class BirthDataInputViewModel: ObservableObject {
 
     
     func selectLocation(_ suggestion: LocationSuggestion) {
+        // Отменяем текущий поиск
+        searchTask?.cancel()
+        isSearchingLocation = false
+
+        // Устанавливаем флаг ДО изменения cityName
+        isSelectingLocation = true
+
         cityName = suggestion.city
         countryName = suggestion.country
         latitude = suggestion.latitude
         longitude = suggestion.longitude
-        
+
         if let timeZoneId = suggestion.timeZoneId,
            let timeZone = TimeZone(identifier: timeZoneId) {
             selectedTimeZone = timeZone
         }
-        
+
         showingSuggestions = false
         errorMessage = nil
+
+        // Сбрасываем флаг после небольшой задержки
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.isSelectingLocation = false
+        }
     }
     
     func manuallySetCoordinates(lat: Double, lon: Double) {
@@ -174,6 +201,12 @@ class BirthDataInputViewModel: ObservableObject {
         )
         
         saveBirthDataToUserDefaults(birthData)
+
+        // Уведомляем координатор о необходимости навигации к карте
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NotificationCenter.default.post(name: .navigateToChart, object: nil)
+        }
+
         isSaved = true
     }
     

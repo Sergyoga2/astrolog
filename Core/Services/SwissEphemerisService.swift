@@ -63,6 +63,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
         let aspects = calculateAspects(from: planets)
         
         return BirthChart(
+            id: UUID().uuidString,
             userId: "user_123",
             name: "Swiss Ephemeris Chart",
             birthDate: birthData.date,
@@ -72,7 +73,8 @@ class SwissEphemerisService: AstrologyServiceProtocol {
             longitude: birthData.longitude,
             planets: planets,
             houses: houses,
-            aspects: aspects
+            aspects: aspects,
+            calculatedAt: Date()
         )
     }
     
@@ -122,6 +124,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
             let isRetrograde = result.isRetrograde
             
             let planet = Planet(
+                id: UUID().uuidString,
                 type: planetType,
                 longitude: longitude,
                 zodiacSign: zodiacSign,
@@ -155,6 +158,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
         let ascendantLongitude = houseData.ascendant
         let ascendantSign = ZodiacSign(rawValue: Int(ascendantLongitude / 30)) ?? .aries
         let ascendant = Planet(
+            id: UUID().uuidString,
             type: .ascendant,
             longitude: ascendantLongitude,
             zodiacSign: ascendantSign,
@@ -165,6 +169,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
         let mcLongitude = houseData.midheaven
         let mcSign = ZodiacSign(rawValue: Int(mcLongitude / 30)) ?? .aries
         let midheaven = Planet(
+            id: UUID().uuidString,
             type: .midheaven,
             longitude: mcLongitude,
             zodiacSign: mcSign,
@@ -189,6 +194,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
             let zodiacSign = ZodiacSign(rawValue: Int(cuspLongitude / 30)) ?? .aries
             
             let house = House(
+                id: UUID().uuidString,
                 number: houseNumber,
                 cuspLongitude: cuspLongitude,
                 zodiacSign: zodiacSign,
@@ -215,6 +221,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
                 
                 if let (aspectType, orb) = calculateAspectType(between: planet1.longitude, and: planet2.longitude) {
                     let aspect = Aspect(
+                        id: UUID().uuidString,
                         planet1: planet1.type,
                         planet2: planet2.type,
                         type: aspectType,
@@ -272,6 +279,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
         let normalizedScore = max(0, min(100, averageScore))
         
         return CompatibilityResult(
+            id: UUID().uuidString,
             chart1UserId: chart1.userId,
             chart2UserId: chart2.userId,
             overallScore: normalizedScore,

@@ -33,7 +33,7 @@ struct DailyHoroscope: Codable, Identifiable {
 }
 
 struct CompatibilityResult: Codable, Identifiable {
-    let id = UUID().uuidString
+    let id: String
     let chart1UserId: String
     let chart2UserId: String
     let overallScore: Double // 0-100

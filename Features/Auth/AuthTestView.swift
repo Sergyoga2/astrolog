@@ -100,6 +100,7 @@ struct AuthTestView: View {
         do {
             // Create test birth chart
             let testChart = BirthChart(
+                id: UUID().uuidString,
                 userId: firebaseService.currentUser?.uid ?? "test_user",
                 name: "Firebase Test Chart",
                 birthDate: Date(),
@@ -109,7 +110,8 @@ struct AuthTestView: View {
                 longitude: 37.6176,
                 planets: [],
                 houses: [],
-                aspects: []
+                aspects: [],
+                calculatedAt: Date()
             )
 
             testStatus = "Saving test chart..."

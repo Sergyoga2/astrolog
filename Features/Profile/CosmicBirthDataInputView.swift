@@ -291,12 +291,15 @@ struct CosmicTimeStepCard: View {
                 }
 
                 HStack(spacing: CosmicSpacing.medium) {
-                    CosmicButton(
-                        title: "Назад",
-                        icon: "arrow.left",
-                        color: .starWhite,
-                        action: onPrevious
-                    )
+                    Button(action: onPrevious) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.left")
+                                .font(.system(size: 16, weight: .medium))
+                            Text("Назад")
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                        }
+                    }
+                    .buttonStyle(CosmicButtonStyle(primaryColor: .neonPurple, isProminent: false))
 
                     CosmicButton(
                         title: "Далее",
@@ -343,31 +346,31 @@ struct CosmicLocationStepCard: View {
                             suggestions: viewModel.locationSuggestions,
                             onSelect: { suggestion in
                                 viewModel.selectLocation(suggestion)
+                                // Автоматически переходим к следующему шагу после выбора города
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    onNext()
+                                }
                             }
                         )
                     }
 
-                    // Поле страны
-                    CosmicTextField("Страна", text: $viewModel.countryName, icon: "globe")
 
-                    // Статус координат
-                    if viewModel.hasCoordinates {
-                        CosmicCoordinatesDisplay(
-                            latitude: viewModel.latitude,
-                            longitude: viewModel.longitude
-                        )
-                    } else if !viewModel.cityName.isEmpty {
+                    // Показываем предупреждение только если нет координат и нет предложений
+                    if !viewModel.hasCoordinates && !viewModel.cityName.isEmpty && !viewModel.showingSuggestions {
                         CosmicWarningMessage(text: "Координаты не найдены. Попробуйте выбрать из предложений.")
                     }
                 }
 
                 HStack(spacing: CosmicSpacing.medium) {
-                    CosmicButton(
-                        title: "Назад",
-                        icon: "arrow.left",
-                        color: .starWhite,
-                        action: onPrevious
-                    )
+                    Button(action: onPrevious) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.left")
+                                .font(.system(size: 16, weight: .medium))
+                            Text("Назад")
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                        }
+                    }
+                    .buttonStyle(CosmicButtonStyle(primaryColor: .neonPurple, isProminent: false))
 
                     CosmicButton(
                         title: "Далее",
@@ -440,12 +443,15 @@ struct CosmicConfirmationCard: View {
                 }
 
                 HStack(spacing: CosmicSpacing.medium) {
-                    CosmicButton(
-                        title: "Назад",
-                        icon: "arrow.left",
-                        color: .starWhite,
-                        action: onPrevious
-                    )
+                    Button(action: onPrevious) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.left")
+                                .font(.system(size: 16, weight: .medium))
+                            Text("Назад")
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                        }
+                    }
+                    .buttonStyle(CosmicButtonStyle(primaryColor: .neonPurple, isProminent: false))
 
                     CosmicButton(
                         title: "Создать карту",
@@ -515,73 +521,65 @@ struct CosmicCitySuggestionRow: View {
     @State private var isPressed = false
 
     var body: some View {
-        Button(action: onSelect) {
-            HStack(spacing: CosmicSpacing.medium) {
-                // Иконка местоположения
-                ZStack {
-                    Circle()
-                        .fill(Color.neonCyan.opacity(0.2))
-                        .frame(width: 40, height: 40)
+        HStack(spacing: CosmicSpacing.medium) {
+            // Иконка местоположения
+            ZStack {
+                Circle()
+                    .fill(Color.neonCyan.opacity(0.2))
+                    .frame(width: 40, height: 40)
 
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.neonCyan)
-                }
-
-                // Информация о городе
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(suggestion.city)
-                        .font(CosmicTypography.body)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.starWhite)
-                        .multilineTextAlignment(.leading)
-
-                    HStack(spacing: 4) {
-                        Text(suggestion.country)
-                            .font(CosmicTypography.caption)
-                            .foregroundColor(.starWhite.opacity(0.7))
-
-                        // Показываем часовой пояс если есть
-                        if let timeZone = suggestion.timeZoneId {
-                            Text("•")
-                                .font(CosmicTypography.caption)
-                                .foregroundColor(.starWhite.opacity(0.5))
-
-                            Text(formatTimeZone(timeZone))
-                                .font(CosmicTypography.caption)
-                                .foregroundColor(.neonPurple.opacity(0.8))
-                        }
-                    }
-
-                    // Координаты
-                    Text(String(format: "%.4f°, %.4f°", suggestion.latitude, suggestion.longitude))
-                        .font(.system(size: 10, weight: .regular, design: .monospaced))
-                        .foregroundColor(.starWhite.opacity(0.5))
-                }
-
-                Spacer()
-
-                // Стрелка выбора
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.neonCyan.opacity(0.6))
+                Image(systemName: "location.fill")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.neonCyan)
             }
-            .padding(CosmicSpacing.medium)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isPressed ? Color.neonCyan.opacity(0.1) : .clear)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(
-                                isPressed ? Color.neonCyan.opacity(0.5) : Color.neonCyan.opacity(0.2),
-                                lineWidth: isPressed ? 2 : 1
-                            )
-                    )
-            )
-            .scaleEffect(isPressed ? 0.98 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: isPressed)
+
+            // Информация о городе
+            VStack(alignment: .leading, spacing: 4) {
+                Text(suggestion.city)
+                    .font(CosmicTypography.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.starWhite)
+                    .multilineTextAlignment(.leading)
+
+                // Показываем часовой пояс если есть
+                if let timeZone = suggestion.timeZoneId {
+                    Text(formatTimeZone(timeZone))
+                        .font(CosmicTypography.caption)
+                        .foregroundColor(.neonPurple.opacity(0.8))
+                }
+
+                // Координаты
+                Text(String(format: "%.4f°, %.4f°", suggestion.latitude, suggestion.longitude))
+                    .font(.system(size: 10, weight: .regular, design: .monospaced))
+                    .foregroundColor(.starWhite.opacity(0.5))
+            }
+
+            Spacer()
+
+            // Стрелка выбора
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.neonCyan.opacity(0.6))
         }
-        .buttonStyle(.plain)
+        .padding(CosmicSpacing.medium)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isPressed ? Color.neonCyan.opacity(0.1) : .clear)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            isPressed ? Color.neonCyan.opacity(0.5) : Color.neonCyan.opacity(0.2),
+                            lineWidth: isPressed ? 2 : 1
+                        )
+                )
+        )
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.easeInOut(duration: 0.1), value: isPressed)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            CosmicFeedbackManager.shared.lightImpact()
+            onSelect()
+        }
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity,
                            pressing: { pressing in
                                isPressed = pressing
@@ -702,12 +700,10 @@ struct CosmicTimeInfoSheet: View {
             VStack(spacing: CosmicSpacing.large) {
                 // Заголовок
                 HStack {
-                    Spacer()
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.starWhite.opacity(0.6))
+                    CosmicBackButton {
+                        dismiss()
                     }
+                    Spacer()
                 }
 
                 VStack(spacing: CosmicSpacing.medium) {

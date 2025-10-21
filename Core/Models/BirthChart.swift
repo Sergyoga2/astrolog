@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 struct BirthChart: Codable, Identifiable {
-    let id = UUID().uuidString
+    let id: String
     let userId: String
     let name: String
     let birthDate: Date
@@ -20,7 +20,7 @@ struct BirthChart: Codable, Identifiable {
     let planets: [Planet]
     let houses: [House]
     let aspects: [Aspect]
-    let calculatedAt = Date()
+    let calculatedAt: Date
     
     // Основные элементы для интерпретации
     var sunSign: ZodiacSign {
@@ -37,7 +37,7 @@ struct BirthChart: Codable, Identifiable {
 }
 
 struct Planet: Codable, Identifiable {
-    let id = UUID().uuidString
+    let id: String
     let type: PlanetType
     let longitude: Double // 0-360 градусов
     let zodiacSign: ZodiacSign
@@ -56,7 +56,7 @@ struct Planet: Codable, Identifiable {
 }
 
 struct House: Codable, Identifiable {
-    let id = UUID().uuidString
+    let id: String
     let number: Int // 1-12
     let cuspLongitude: Double
     let zodiacSign: ZodiacSign
@@ -64,7 +64,7 @@ struct House: Codable, Identifiable {
 }
 
 struct Aspect: Codable, Identifiable {
-    let id = UUID().uuidString
+    let id: String
     let planet1: PlanetType
     let planet2: PlanetType
     let type: AspectType

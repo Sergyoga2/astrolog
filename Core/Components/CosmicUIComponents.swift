@@ -269,6 +269,30 @@ struct CosmicSectionHeader: View {
     }
 }
 
+// MARK: - Cosmic Back Button
+struct CosmicBackButton: View {
+    let action: () -> Void
+
+    init(action: @escaping () -> Void) {
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: {
+            CosmicFeedbackManager.shared.lightImpact()
+            action()
+        }) {
+            HStack(spacing: 8) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 16, weight: .medium))
+                Text("Назад")
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+            }
+        }
+        .buttonStyle(CosmicButtonStyle(primaryColor: .neonPurple, isProminent: false))
+    }
+}
+
 // MARK: - Cosmic Divider
 struct CosmicDivider: View {
     let gradient: LinearGradient

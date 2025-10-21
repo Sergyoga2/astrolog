@@ -14,6 +14,7 @@ class MockAstrologyService: ObservableObject {
         try? await Task.sleep(nanoseconds: 2_000_000_000)
         
         return BirthChart(
+            id: UUID().uuidString,
             userId: "mock_user",
             name: "Mock Birth Chart",
             birthDate: birthData.date,
@@ -23,7 +24,8 @@ class MockAstrologyService: ObservableObject {
             longitude: birthData.longitude,
             planets: createMockPlanets(),
             houses: createMockHouses(),
-            aspects: createMockAspects()
+            aspects: createMockAspects(),
+            calculatedAt: Date()
         )
     }
     
@@ -48,6 +50,7 @@ class MockAstrologyService: ObservableObject {
             let randomLongitude = Double.random(in: 0...360)
             
             let planet = Planet(
+                id: UUID().uuidString,
                 type: planetType,
                 longitude: randomLongitude,
                 zodiacSign: randomSign,
@@ -68,6 +71,7 @@ class MockAstrologyService: ObservableObject {
             let cuspLongitude = Double(houseNumber - 1) * 30 + Double.random(in: 0...30)
             
             let house = House(
+                id: UUID().uuidString,
                 number: houseNumber,
                 cuspLongitude: cuspLongitude,
                 zodiacSign: randomSign,
@@ -89,6 +93,7 @@ class MockAstrologyService: ObservableObject {
                 if Bool.random() {
                     let aspectType = AspectType.allCases.randomElement() ?? .conjunction
                     let aspect = Aspect(
+                        id: UUID().uuidString,
                         planet1: majorPlanets[i],
                         planet2: majorPlanets[j],
                         type: aspectType,

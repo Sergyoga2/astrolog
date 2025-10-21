@@ -18,6 +18,7 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         let aspects = generateAspects()
         
         return BirthChart(
+            id: UUID().uuidString,
             userId: "user_123",
             name: "Birth Chart",
             birthDate: birthData.date,
@@ -27,7 +28,8 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
             longitude: birthData.longitude,
             planets: planets,
             houses: houses,
-            aspects: aspects
+            aspects: aspects,
+            calculatedAt: Date()
         )
     }
     
@@ -93,8 +95,10 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
             7: "В субботу важно помнить, что"
         ]
 
-        let context = timeContexts[(dayOfWeek + date.hashValue) % timeContexts.count]
-        let modifier = weekdayModifiers[dayOfWeek] ?? ""
+        let contextIndex = abs(dayOfWeek + date.hashValue) % timeContexts.count
+        let context = timeContexts[contextIndex]
+        let safeWeekday = ((dayOfWeek - 1) % 7) + 1 // Приводим к диапазону 1-7
+        let modifier = weekdayModifiers[safeWeekday] ?? ""
 
         return "\(modifier) \(context.lowercased()) \(baseText.lowercased())"
     }
@@ -124,7 +128,7 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         let seasonalThemes = getSeasonalThemes(month: month)
         let signThemes = getSignSpecificThemes(for: sign)
 
-        var themes = seasonalThemes + signThemes
+        let themes = seasonalThemes + signThemes
         let seedValue = calendar.component(.day, from: date) + sign.rawValue
 
         var generator = SeededRandomNumberGenerator(seed: seedValue)
@@ -164,6 +168,7 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         let baseScore = Double.random(in: 55...95)
         
         return CompatibilityResult(
+            id: UUID().uuidString,
             chart1UserId: chart1.userId,
             chart2UserId: chart2.userId,
             overallScore: baseScore,
@@ -227,6 +232,7 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
             let longitude = Double(sign.rawValue * 30) + Double.random(in: 0...30)
             
             let planet = Planet(
+                id: UUID().uuidString,
                 type: planetType,
                 longitude: longitude,
                 zodiacSign: sign,
@@ -244,6 +250,7 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         
         for number in 1...12 {
             let house = House(
+                id: UUID().uuidString,
                 number: number,
                 cuspLongitude: Double((number - 1) * 30),
                 zodiacSign: getRandomSign(),
@@ -258,6 +265,7 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
     private func generateAspects() -> [Aspect] {
         let aspects: [Aspect] = [
             Aspect(
+                id: UUID().uuidString,
                 planet1: .sun,
                 planet2: .moon,
                 type: .trine,
@@ -265,6 +273,7 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
                 isApplying: true
             ),
             Aspect(
+                id: UUID().uuidString,
                 planet1: .venus,
                 planet2: .mars,
                 type: .conjunction,

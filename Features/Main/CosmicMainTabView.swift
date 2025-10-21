@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CosmicMainTabView: View {
-    @State private var selectedTab = 0
+    @EnvironmentObject var coordinator: AppCoordinator
     
     init() {
         // Настройка прозрачного TabBar
@@ -27,7 +27,7 @@ struct CosmicMainTabView: View {
             VStack(spacing: 0) {
                 // Контент экранов
                 Group {
-                    switch selectedTab {
+                    switch coordinator.selectedMainTab {
                     case 0:
                         TodayView()
                     case 1:
@@ -52,7 +52,7 @@ struct CosmicMainTabView: View {
             // Кастомный TabBar поверх контента
             VStack {
                 Spacer()
-                CosmicTabBar(selectedTab: $selectedTab)
+                CosmicTabBar(selectedTab: $coordinator.selectedMainTab)
             }
         }
     }

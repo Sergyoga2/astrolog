@@ -202,6 +202,7 @@ extension BirthChart {
     static func fromDictionary(_ dict: [String: Any]) -> BirthChart {
         let dateFormatter = ISO8601DateFormatter()
         return BirthChart(
+            id: dict["id"] as? String ?? UUID().uuidString,
             userId: dict["userId"] as? String ?? "",
             name: dict["name"] as? String ?? "",
             birthDate: dateFormatter.date(from: dict["birthDate"] as? String ?? "") ?? Date(),
@@ -211,7 +212,8 @@ extension BirthChart {
             longitude: dict["longitude"] as? Double ?? 0.0,
             planets: [], // TODO: Parse planets from dict
             houses: [],  // TODO: Parse houses from dict
-            aspects: []  // TODO: Parse aspects from dict
+            aspects: [], // TODO: Parse aspects from dict
+            calculatedAt: dateFormatter.date(from: dict["calculatedAt"] as? String ?? "") ?? Date()
         )
     }
 }
