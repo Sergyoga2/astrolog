@@ -10,13 +10,13 @@ struct SecureStorageServiceTests {
 
     @Test func testEncryptDecryptBirthData() async throws {
         let birthData = BirthData(
-            birthDate: Date(),
-            birthTime: "14:30",
-            location: "Moscow, Russia",
+            date: Date(),
+            timeZone: TimeZone(identifier: "Europe/Moscow")!,
             latitude: 55.7558,
             longitude: 37.6176,
-            timezone: "Europe/Moscow",
-            timeUnknown: false
+            cityName: "Moscow",
+            countryName: "Russia",
+            isTimeExact: true
         )
 
         // Encrypt
@@ -27,23 +27,23 @@ struct SecureStorageServiceTests {
         let decrypted: BirthData = try service.decrypt(encrypted, as: BirthData.self)
 
         // Verify
-        #expect(decrypted.location == birthData.location, "Location should match")
+        #expect(decrypted.cityName == birthData.cityName, "City name should match")
+        #expect(decrypted.countryName == birthData.countryName, "Country name should match")
         #expect(decrypted.latitude == birthData.latitude, "Latitude should match")
         #expect(decrypted.longitude == birthData.longitude, "Longitude should match")
-        #expect(decrypted.birthTime == birthData.birthTime, "Birth time should match")
-        #expect(decrypted.timezone == birthData.timezone, "Timezone should match")
-        #expect(decrypted.timeUnknown == birthData.timeUnknown, "Time unknown flag should match")
+        #expect(decrypted.timeZone == birthData.timeZone, "Timezone should match")
+        #expect(decrypted.isTimeExact == birthData.isTimeExact, "isTimeExact flag should match")
     }
 
     @Test func testEncryptedDataIsDifferent() async throws {
         let birthData = BirthData(
-            birthDate: Date(),
-            birthTime: "12:00",
-            location: "London, UK",
+            date: Date(),
+            timeZone: TimeZone(identifier: "Europe/London")!,
             latitude: 51.5074,
             longitude: -0.1278,
-            timezone: "Europe/London",
-            timeUnknown: false
+            cityName: "London",
+            countryName: "United Kingdom",
+            isTimeExact: true
         )
 
         // Encrypt same data twice
@@ -57,7 +57,7 @@ struct SecureStorageServiceTests {
         let decrypted1: BirthData = try service.decrypt(encrypted1, as: BirthData.self)
         let decrypted2: BirthData = try service.decrypt(encrypted2, as: BirthData.self)
 
-        #expect(decrypted1.location == decrypted2.location, "Decrypted data should be identical")
+        #expect(decrypted1.cityName == decrypted2.cityName, "Decrypted data should be identical")
     }
 
     @Test func testDecryptInvalidDataFails() async throws {
@@ -73,13 +73,13 @@ struct SecureStorageServiceTests {
     @Test func testStoreSaveAndRetrieveBirthData() async throws {
         let userId = "test_user_\(UUID().uuidString)"
         let birthData = BirthData(
-            birthDate: Date(timeIntervalSince1970: 946684800),
-            birthTime: "10:30",
-            location: "New York, USA",
+            date: Date(timeIntervalSince1970: 946684800),
+            timeZone: TimeZone(identifier: "America/New_York")!,
             latitude: 40.7128,
             longitude: -74.0060,
-            timezone: "America/New_York",
-            timeUnknown: false
+            cityName: "New York",
+            countryName: "USA",
+            isTimeExact: true
         )
 
         // Store
@@ -91,7 +91,8 @@ struct SecureStorageServiceTests {
         #expect(retrieved != nil, "Birth data should be retrieved")
 
         if let retrieved = retrieved {
-            #expect(retrieved.location == birthData.location, "Location should match")
+            #expect(retrieved.cityName == birthData.cityName, "City name should match")
+            #expect(retrieved.countryName == birthData.countryName, "Country name should match")
             #expect(retrieved.latitude == birthData.latitude, "Latitude should match")
             #expect(retrieved.longitude == birthData.longitude, "Longitude should match")
         }
@@ -103,13 +104,13 @@ struct SecureStorageServiceTests {
     @Test func testDeleteBirthData() async throws {
         let userId = "test_user_\(UUID().uuidString)"
         let birthData = BirthData(
-            birthDate: Date(),
-            birthTime: "15:00",
-            location: "Paris, France",
+            date: Date(),
+            timeZone: TimeZone(identifier: "Europe/Paris")!,
             latitude: 48.8566,
             longitude: 2.3522,
-            timezone: "Europe/Paris",
-            timeUnknown: false
+            cityName: "Paris",
+            countryName: "France",
+            isTimeExact: false
         )
 
         // Store

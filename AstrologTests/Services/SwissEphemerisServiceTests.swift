@@ -6,239 +6,288 @@ import Foundation
 struct SwissEphemerisServiceTests {
     let service = SwissEphemerisService()
 
-    // MARK: - Planet Position Tests
+    // MARK: - Birth Chart Calculation Tests
 
-    @Test func testCalculateSunPosition() async throws {
-        // Test Sun position calculation for a known date
-        let birthDate = Date(timeIntervalSince1970: 946684800) // 2000-01-01 00:00:00 UTC
-
-        let positions = await service.calculatePlanetPositions(
-            date: birthDate,
-            latitude: 0,
-            longitude: 0
-        )
-
-        #expect(positions.count > 0, "Should calculate planet positions")
-
-        // Find Sun position
-        let sunPosition = positions.first { $0.planet == .sun }
-        #expect(sunPosition != nil, "Should calculate Sun position")
-
-        if let sun = sunPosition {
-            // Sun should be in Capricorn around Jan 1, 2000
-            #expect(sun.longitude >= 0 && sun.longitude < 360, "Longitude should be valid (0-360)")
-            #expect(sun.zodiacSign == .capricorn, "Sun should be in Capricorn on Jan 1")
-        }
-    }
-
-    @Test func testCalculateMoonPosition() async throws {
-        let birthDate = Date()
-
-        let positions = await service.calculatePlanetPositions(
-            date: birthDate,
-            latitude: 51.5074, // London
-            longitude: -0.1278
-        )
-
-        let moonPosition = positions.first { $0.planet == .moon }
-        #expect(moonPosition != nil, "Should calculate Moon position")
-
-        if let moon = moonPosition {
-            #expect(moon.longitude >= 0 && moon.longitude < 360, "Moon longitude should be valid")
-            #expect(moon.zodiacSign != nil, "Moon should have zodiac sign")
-        }
-    }
-
-    @Test func testAllPlanetsCalculated() async throws {
-        let birthDate = Date()
-
-        let positions = await service.calculatePlanetPositions(
-            date: birthDate,
-            latitude: 40.7128, // New York
-            longitude: -74.0060
-        )
-
-        // Should calculate at least the major planets
-        let expectedPlanets: [Planet] = [.sun, .moon, .mercury, .venus, .mars, .jupiter, .saturn]
-
-        for planet in expectedPlanets {
-            let position = positions.first { $0.planet == planet }
-            #expect(position != nil, "\(planet) position should be calculated")
-        }
-    }
-
-    // MARK: - House Calculation Tests
-
-    @Test func testCalculateHouses() async throws {
-        let birthDate = Date(timeIntervalSince1970: 946684800) // 2000-01-01
-
-        let houses = await service.calculateHouses(
-            date: birthDate,
-            latitude: 55.7558, // Moscow
-            longitude: 37.6176
-        )
-
-        #expect(houses.count == 12, "Should calculate 12 houses")
-
-        // First house cusp should be valid
-        let firstHouse = houses.first { $0.number == 1 }
-        #expect(firstHouse != nil, "First house should exist")
-
-        if let house1 = firstHouse {
-            #expect(house1.cusp >= 0 && house1.cusp < 360, "House cusp should be valid")
-            #expect(house1.sign != nil, "House should have zodiac sign")
-        }
-
-        // All houses should have unique numbers
-        let houseNumbers = Set(houses.map { $0.number })
-        #expect(houseNumbers.count == 12, "All 12 houses should have unique numbers")
-    }
-
-    // MARK: - Aspect Calculation Tests
-
-    @Test func testCalculateAspects() async throws {
-        let birthDate = Date()
-
-        let positions = await service.calculatePlanetPositions(
-            date: birthDate,
-            latitude: 0,
-            longitude: 0
-        )
-
-        let aspects = await service.calculateAspects(positions: positions)
-
-        #expect(aspects.count > 0, "Should calculate some aspects")
-
-        // Check aspect properties
-        for aspect in aspects {
-            #expect(aspect.planet1 != aspect.planet2, "Aspect should be between different planets")
-            #expect(aspect.angle >= 0 && aspect.angle <= 180, "Aspect angle should be valid")
-            #expect(aspect.orb >= 0, "Orb should be non-negative")
-        }
-    }
-
-    @Test func testConjunctionDetection() async throws {
-        // Create two positions very close together (conjunction)
-        let positions = [
-            PlanetPosition(planet: .sun, longitude: 100.0, latitude: 0, speed: 1.0, zodiacSign: .cancer, degree: 10.0),
-            PlanetPosition(planet: .moon, longitude: 103.0, latitude: 0, speed: 13.0, zodiacSign: .cancer, degree: 13.0)
-        ]
-
-        let aspects = await service.calculateAspects(positions: positions)
-
-        // Should detect conjunction (0° aspect) with orb of 3°
-        let conjunction = aspects.first { $0.type == .conjunction }
-        #expect(conjunction != nil, "Should detect conjunction between Sun and Moon")
-
-        if let aspect = conjunction {
-            #expect(aspect.angle < 10, "Conjunction angle should be small")
-        }
-    }
-
-    // MARK: - Birth Chart Creation Tests
-
-    @Test func testCreateBirthChart() async throws {
+    @Test func testCalculateBirthChart() async throws {
         let birthData = BirthData(
-            birthDate: Date(timeIntervalSince1970: 946684800),
-            birthTime: "12:00",
-            location: "Moscow, Russia",
+            date: Date(timeIntervalSince1970: 946684800), // 2000-01-01
+            timeZone: TimeZone(identifier: "Europe/Moscow")!,
             latitude: 55.7558,
             longitude: 37.6176,
-            timezone: "Europe/Moscow",
-            timeUnknown: false
+            cityName: "Moscow",
+            countryName: "Russia",
+            isTimeExact: true
         )
 
-        let chart = await service.calculateBirthChart(
-            userId: "test_user",
-            name: "Test Chart",
-            birthData: birthData
-        )
+        let chart = try await service.calculateBirthChart(from: birthData)
 
-        #expect(chart.userId == "test_user", "Chart should have correct user ID")
-        #expect(chart.name == "Test Chart", "Chart should have correct name")
         #expect(chart.planets.count > 0, "Chart should have planets")
         #expect(chart.houses.count == 12, "Chart should have 12 houses")
-        #expect(chart.aspects.count > 0, "Chart should have aspects")
+        #expect(chart.location.contains("Moscow"), "Chart location should contain city name")
+        #expect(chart.latitude == birthData.latitude, "Chart latitude should match")
+        #expect(chart.longitude == birthData.longitude, "Chart longitude should match")
     }
 
-    // MARK: - Ascendant Calculation Tests
-
-    @Test func testCalculateAscendant() async throws {
-        let birthDate = Date(timeIntervalSince1970: 946684800) // 2000-01-01 12:00
-
-        let ascendant = await service.calculateAscendant(
-            date: birthDate,
-            latitude: 51.5074, // London
-            longitude: -0.1278
+    @Test func testCalculateBirthChartWithDifferentLocations() async throws {
+        // Test for New York
+        let nyBirthData = BirthData(
+            date: Date(),
+            timeZone: TimeZone(identifier: "America/New_York")!,
+            latitude: 40.7128,
+            longitude: -74.0060,
+            cityName: "New York",
+            countryName: "USA",
+            isTimeExact: true
         )
 
-        #expect(ascendant >= 0 && ascendant < 360, "Ascendant should be valid degree")
+        let nyChart = try await service.calculateBirthChart(from: nyBirthData)
+        #expect(nyChart.planets.count > 0, "NY chart should have planets")
+
+        // Test for London
+        let londonBirthData = BirthData(
+            date: Date(),
+            timeZone: TimeZone(identifier: "Europe/London")!,
+            latitude: 51.5074,
+            longitude: -0.1278,
+            cityName: "London",
+            countryName: "United Kingdom",
+            isTimeExact: true
+        )
+
+        let londonChart = try await service.calculateBirthChart(from: londonBirthData)
+        #expect(londonChart.planets.count > 0, "London chart should have planets")
+
+        // Charts should have same planets but potentially different house positions
+        #expect(nyChart.planets.count == londonChart.planets.count, "Both charts should have same number of planets")
     }
 
-    // MARK: - Zodiac Sign Tests
+    @Test func testBirthChartHasMajorPlanets() async throws {
+        let birthData = BirthData(
+            date: Date(),
+            timeZone: TimeZone.current,
+            latitude: 0,
+            longitude: 0,
+            cityName: "Equator",
+            countryName: "Ocean",
+            isTimeExact: true
+        )
 
-    @Test func testZodiacSignFromDegree() {
-        // Test zodiac sign calculation from longitude
-        #expect(ZodiacSign.from(longitude: 0) == .aries, "0° should be Aries")
-        #expect(ZodiacSign.from(longitude: 30) == .taurus, "30° should be Taurus")
-        #expect(ZodiacSign.from(longitude: 60) == .gemini, "60° should be Gemini")
-        #expect(ZodiacSign.from(longitude: 90) == .cancer, "90° should be Cancer")
-        #expect(ZodiacSign.from(longitude: 180) == .libra, "180° should be Libra")
-        #expect(ZodiacSign.from(longitude: 270) == .capricorn, "270° should be Capricorn")
-        #expect(ZodiacSign.from(longitude: 359) == .pisces, "359° should be Pisces")
+        let chart = try await service.calculateBirthChart(from: birthData)
+
+        // Check for major planets
+        let planetTypes = chart.planets.map { $0.name }
+
+        let expectedPlanets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"]
+
+        for expected in expectedPlanets {
+            #expect(planetTypes.contains(expected), "\(expected) should be in the chart")
+        }
+    }
+
+    @Test func testBirthChartHasHouses() async throws {
+        let birthData = BirthData(
+            date: Date(),
+            timeZone: TimeZone.current,
+            latitude: 51.5074,
+            longitude: -0.1278,
+            cityName: "London",
+            countryName: "UK",
+            isTimeExact: true
+        )
+
+        let chart = try await service.calculateBirthChart(from: birthData)
+
+        #expect(chart.houses.count == 12, "Chart should have exactly 12 houses")
+
+        // Verify houses are numbered 1-12
+        let houseNumbers = chart.houses.map { $0.number }
+        for i in 1...12 {
+            #expect(houseNumbers.contains(i), "House \(i) should exist")
+        }
+    }
+
+    @Test func testBirthChartHasAspects() async throws {
+        let birthData = BirthData(
+            date: Date(timeIntervalSince1970: 946684800),
+            timeZone: TimeZone(identifier: "UTC")!,
+            latitude: 0,
+            longitude: 0,
+            cityName: "Greenwich",
+            countryName: "UK",
+            isTimeExact: true
+        )
+
+        let chart = try await service.calculateBirthChart(from: birthData)
+
+        #expect(chart.aspects.count > 0, "Chart should have some aspects")
+
+        // Verify aspects have valid properties
+        for aspect in chart.aspects {
+            #expect(!aspect.planet1.isEmpty, "Aspect should have planet1")
+            #expect(!aspect.planet2.isEmpty, "Aspect should have planet2")
+            #expect(aspect.planet1 != aspect.planet2, "Aspect planets should be different")
+        }
     }
 
     // MARK: - Compatibility Tests
 
     @Test func testCalculateCompatibility() async throws {
-        let chart1 = BirthChart(
-            id: "1",
-            userId: "user1",
-            name: "Person 1",
-            birthDate: Date(timeIntervalSince1970: 946684800),
-            birthTime: "12:00",
-            location: "Moscow",
+        let birthData1 = BirthData(
+            date: Date(timeIntervalSince1970: 946684800),
+            timeZone: TimeZone(identifier: "Europe/Moscow")!,
             latitude: 55.7558,
             longitude: 37.6176,
-            planets: [],
-            houses: [],
-            aspects: [],
-            calculatedAt: Date()
+            cityName: "Moscow",
+            countryName: "Russia",
+            isTimeExact: true
         )
 
-        let chart2 = BirthChart(
-            id: "2",
-            userId: "user2",
-            name: "Person 2",
-            birthDate: Date(timeIntervalSince1970: 978220800),
-            birthTime: "18:00",
-            location: "London",
+        let birthData2 = BirthData(
+            date: Date(timeIntervalSince1970: 978220800),
+            timeZone: TimeZone(identifier: "Europe/London")!,
             latitude: 51.5074,
             longitude: -0.1278,
-            planets: [],
-            houses: [],
-            aspects: [],
-            calculatedAt: Date()
+            cityName: "London",
+            countryName: "UK",
+            isTimeExact: true
         )
 
-        let compatibility = await service.calculateCompatibility(chart1: chart1, chart2: chart2)
+        let chart1 = try await service.calculateBirthChart(from: birthData1)
+        let chart2 = try await service.calculateBirthChart(from: birthData2)
 
-        #expect(compatibility >= 0 && compatibility <= 100, "Compatibility should be 0-100%")
+        let compatibility = try await service.calculateCompatibility(chart1: chart1, chart2: chart2)
+
+        #expect(compatibility.overallScore >= 0, "Compatibility score should be non-negative")
+        #expect(compatibility.overallScore <= 100, "Compatibility score should not exceed 100")
+        #expect(!compatibility.description.isEmpty, "Compatibility should have description")
+        #expect(compatibility.strengths.count > 0, "Compatibility should have strengths")
+        #expect(compatibility.challenges.count > 0, "Compatibility should have challenges")
     }
-}
 
-// MARK: - Helper Extension
+    @Test func testCompatibilityWithSameChart() async throws {
+        let birthData = BirthData(
+            date: Date(),
+            timeZone: TimeZone.current,
+            latitude: 40.7128,
+            longitude: -74.0060,
+            cityName: "New York",
+            countryName: "USA",
+            isTimeExact: true
+        )
 
-extension ZodiacSign {
-    static func from(longitude: Double) -> ZodiacSign {
-        let normalized = longitude.truncatingRemainder(dividingBy: 360)
-        let index = Int(normalized / 30)
+        let chart = try await service.calculateBirthChart(from: birthData)
 
-        let signs: [ZodiacSign] = [
+        let compatibility = try await service.calculateCompatibility(chart1: chart, chart2: chart)
+
+        // Same chart should have high compatibility
+        #expect(compatibility.overallScore >= 70, "Same chart should have high compatibility")
+    }
+
+    // MARK: - Daily Horoscope Tests
+
+    @Test func testGenerateDailyHoroscope() async throws {
+        let horoscope = try await service.generateDailyHoroscope(for: .aries, date: Date())
+
+        #expect(!horoscope.prediction.isEmpty, "Horoscope should have prediction")
+        #expect(horoscope.energyLevel > 0, "Horoscope should have energy level")
+        #expect(horoscope.energyLevel <= 100, "Energy level should not exceed 100")
+        #expect(horoscope.luckyNumbers.count > 0, "Horoscope should have lucky numbers")
+        #expect(!horoscope.luckyColor.isEmpty, "Horoscope should have lucky color")
+    }
+
+    @Test func testGenerateHoroscopeForAllSigns() async throws {
+        let allSigns: [ZodiacSign] = [
             .aries, .taurus, .gemini, .cancer, .leo, .virgo,
             .libra, .scorpio, .sagittarius, .capricorn, .aquarius, .pisces
         ]
 
-        return signs[index % 12]
+        for sign in allSigns {
+            let horoscope = try await service.generateDailyHoroscope(for: sign, date: Date())
+            #expect(!horoscope.prediction.isEmpty, "Horoscope for \(sign) should have prediction")
+        }
+    }
+
+    // MARK: - Current Transits Tests
+
+    @Test func testGetCurrentTransits() async throws {
+        let transits = try await service.getCurrentTransits()
+
+        #expect(transits.count > 0, "Should have current transits")
+
+        for transit in transits {
+            #expect(!transit.planet.isEmpty, "Transit should have planet")
+            #expect(!transit.sign.isEmpty, "Transit should have sign")
+            #expect(!transit.influence.isEmpty, "Transit should have influence")
+        }
+    }
+
+    // MARK: - Edge Cases
+
+    @Test func testCalculateChartForLeapYear() async throws {
+        // Test for February 29, 2000 (leap year)
+        let leapYearDate = Date(timeIntervalSince1970: 951782400) // 2000-02-29
+        let birthData = BirthData(
+            date: leapYearDate,
+            timeZone: TimeZone(identifier: "UTC")!,
+            latitude: 0,
+            longitude: 0,
+            cityName: "Greenwich",
+            countryName: "UK",
+            isTimeExact: true
+        )
+
+        let chart = try await service.calculateBirthChart(from: birthData)
+
+        #expect(chart.planets.count > 0, "Leap year chart should calculate successfully")
+    }
+
+    @Test func testCalculateChartForExtremeLatitudes() async throws {
+        // Test for high latitude (near Arctic Circle)
+        let arcticBirthData = BirthData(
+            date: Date(),
+            timeZone: TimeZone(identifier: "Europe/Oslo")!,
+            latitude: 69.6492,
+            longitude: 18.9553,
+            cityName: "Tromsø",
+            countryName: "Norway",
+            isTimeExact: true
+        )
+
+        let chart = try await service.calculateBirthChart(from: arcticBirthData)
+
+        #expect(chart.planets.count > 0, "Arctic chart should calculate successfully")
+        #expect(chart.houses.count == 12, "Arctic chart should still have 12 houses")
+    }
+
+    @Test func testCalculateChartForDifferentTimezones() async throws {
+        let date = Date(timeIntervalSince1970: 946684800)
+
+        // Same moment in time, different timezones
+        let birthDataUTC = BirthData(
+            date: date,
+            timeZone: TimeZone(identifier: "UTC")!,
+            latitude: 0,
+            longitude: 0,
+            cityName: "Greenwich",
+            countryName: "UK",
+            isTimeExact: true
+        )
+
+        let birthDataTokyo = BirthData(
+            date: date,
+            timeZone: TimeZone(identifier: "Asia/Tokyo")!,
+            latitude: 35.6762,
+            longitude: 139.6503,
+            cityName: "Tokyo",
+            countryName: "Japan",
+            isTimeExact: true
+        )
+
+        let chartUTC = try await service.calculateBirthChart(from: birthDataUTC)
+        let chartTokyo = try await service.calculateBirthChart(from: birthDataTokyo)
+
+        // Both charts should be calculated successfully
+        #expect(chartUTC.planets.count > 0, "UTC chart should have planets")
+        #expect(chartTokyo.planets.count > 0, "Tokyo chart should have planets")
     }
 }
