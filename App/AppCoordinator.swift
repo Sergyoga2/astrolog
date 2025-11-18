@@ -16,12 +16,24 @@ final class AppCoordinator: ObservableObject {
 
     enum AppFlow: CaseIterable {
         case onboarding
+        case auth
         case main
         case subscription
     }
-    
-    init() {
-        if UserDefaults.standard.bool(forKey: "onboarding_completed") {
+
+    private let firebaseService: FirebaseService
+
+    init(firebaseService: FirebaseService = .shared) {
+        self.firebaseService = firebaseService
+
+        // Determine initial flow
+        let onboardingCompleted = UserDefaults.standard.bool(forKey: "onboarding_completed")
+
+        if !onboardingCompleted {
+            currentFlow = .onboarding
+        } else if !firebaseService.isAuthenticated {
+            currentFlow = .auth
+        } else {
             currentFlow = .main
         }
 
@@ -36,16 +48,30 @@ final class AppCoordinator: ObservableObject {
             }
         }
     }
-    
+
     func startOnboarding() {
         currentFlow = .onboarding
     }
-    
+
     func completeOnboarding() {
-        currentFlow = .main
         UserDefaults.standard.set(true, forKey: "onboarding_completed")
+
+        // After onboarding, check auth status
+        if firebaseService.isAuthenticated {
+            currentFlow = .main
+        } else {
+            currentFlow = .auth
+        }
     }
-    
+
+    func showAuth() {
+        currentFlow = .auth
+    }
+
+    func completeAuth() {
+        currentFlow = .main
+    }
+
     func showSubscription() {
         currentFlow = .subscription
     }
@@ -53,5 +79,10 @@ final class AppCoordinator: ObservableObject {
     func navigateToChartTab() {
         currentFlow = .main
         selectedMainTab = 1 // Таб "Карта"
+    }
+
+    func signOut() {
+        try? firebaseService.signOut()
+        currentFlow = .auth
     }
 }

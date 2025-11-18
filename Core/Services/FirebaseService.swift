@@ -3,6 +3,8 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
 import Combine
+import AuthenticationServices
+import CryptoKit
 
 @MainActor
 class FirebaseService: ObservableObject {
@@ -53,6 +55,99 @@ extension FirebaseService {
     func deleteAccount() async throws {
         guard let user = currentUser else { return }
         try await user.delete()
+    }
+
+    // Sign in with Apple
+    func signInWithApple(authorization: ASAuthorization) async throws {
+        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+            throw FirebaseError.invalidData
+        }
+
+        guard let appleIDToken = appleIDCredential.identityToken,
+              let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+            throw FirebaseError.invalidData
+        }
+
+        // Create nonce for security
+        let nonce = randomNonceString()
+        let hashedNonce = sha256(nonce)
+
+        // Create Firebase credential
+        let credential = OAuthProvider.appleCredential(
+            withIDToken: idTokenString,
+            rawNonce: nonce,
+            fullName: appleIDCredential.fullName
+        )
+
+        // Sign in with Firebase
+        let result = try await auth.signIn(with: credential)
+
+        // Create user document if this is a new user
+        if let email = result.user.email {
+            await createUserDocument(uid: result.user.uid, email: email)
+        }
+    }
+
+    func resetPassword(email: String) async throws {
+        try await auth.sendPasswordReset(withEmail: email)
+    }
+
+    func sendEmailVerification() async throws {
+        guard let user = currentUser else {
+            throw FirebaseError.notAuthenticated
+        }
+        try await user.sendEmailVerification()
+    }
+
+    // Google Sign In
+    // TODO: Uncomment when GoogleSignIn SDK is integrated
+    /*
+    func signInWithGoogle(result: GIDSignInResult) async throws {
+        guard let idToken = result.user.idToken?.tokenString else {
+            throw FirebaseError.invalidData
+        }
+
+        let credential = GoogleAuthProvider.credential(
+            withIDToken: idToken,
+            accessToken: result.user.accessToken.tokenString
+        )
+
+        let authResult = try await auth.signIn(with: credential)
+
+        // Create user document if this is a new user
+        if let email = authResult.user.email {
+            await createUserDocument(uid: authResult.user.uid, email: email)
+        }
+    }
+    */
+
+    // MARK: - Helpers for Sign in with Apple
+
+    private func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        let errorCode = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+        if errorCode != errSecSuccess {
+            fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+        }
+
+        let charset: [Character] = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+
+        let nonce = randomBytes.map { byte in
+            charset[Int(byte) % charset.count]
+        }
+
+        return String(nonce)
+    }
+
+    private func sha256(_ input: String) -> String {
+        let inputData = Data(input.utf8)
+        let hashedData = SHA256.hash(data: inputData)
+        let hashString = hashedData.compactMap {
+            String(format: "%02x", $0)
+        }.joined()
+
+        return hashString
     }
 }
 

@@ -8,12 +8,14 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    
+
     var body: some View {
         Group {
             switch coordinator.currentFlow {
             case .onboarding:
                 OnboardingCoordinator()
+            case .auth:
+                AuthView()
             case .main:
                 CosmicMainTabView()
             case .subscription:

@@ -1,0 +1,161 @@
+/*
+  Localizable.strings
+  Astrolog
+
+  Russian localization
+*/
+
+// MARK: - Authentication
+"auth.login.title" = "Вход";
+"auth.signup.title" = "Регистрация";
+"auth.email.placeholder" = "Email";
+"auth.password.placeholder" = "Пароль";
+"auth.password.confirm" = "Подтвердите пароль";
+"auth.login.button" = "Войти";
+"auth.signup.button" = "Зарегистрироваться";
+"auth.forgot.password" = "Забыли пароль?";
+"auth.reset.password.title" = "Сброс пароля";
+"auth.reset.password.message" = "Инструкции будут отправлены на:";
+"auth.send" = "Отправить";
+"auth.cancel" = "Отмена";
+"auth.anonymous.button" = "Продолжить без регистрации";
+"auth.welcome.message" = "Добро пожаловать в Astrolog";
+"auth.create.profile" = "Создайте свой астрологический профиль";
+"auth.sign.in.apple" = "Войти через Apple";
+"auth.sign.in.google" = "Войти через Google";
+"auth.or" = "или";
+"auth.no.account" = "Нет аккаунта?";
+"auth.have.account" = "Уже есть аккаунт?";
+"auth.signup.link" = "Зарегистрируйтесь";
+"auth.login.link" = "Войдите";
+
+// Validation
+"auth.validation.password.min" = "Минимум 6 символов";
+"auth.validation.password.match" = "Пароли совпадают";
+"auth.validation.email.invalid" = "Введите корректный email";
+
+// Errors
+"auth.error.title" = "Ошибка";
+"auth.error.ok" = "OK";
+"auth.error.email.used" = "Этот email уже зарегистрирован";
+"auth.error.email.invalid" = "Неверный формат email";
+"auth.error.password.wrong" = "Неверный пароль";
+"auth.error.user.not.found" = "Пользователь не найден";
+"auth.error.password.weak" = "Слишком слабый пароль (минимум 6 символов)";
+"auth.error.anonymous.failed" = "Не удалось войти анонимно";
+"auth.error.apple.failed" = "Не удалось войти через Apple";
+"auth.error.google.failed" = "Не удалось войти через Google";
+"auth.error.reset.failed" = "Не удалось отправить письмо";
+"auth.success.reset" = "Инструкции отправлены на";
+"auth.success.verification" = "Письмо с подтверждением отправлено";
+
+// MARK: - Onboarding
+"onboarding.welcome.title" = "Добро пожаловать";
+"onboarding.features.title" = "Возможности";
+"onboarding.start.button" = "Начать";
+"onboarding.skip" = "Пропустить";
+"onboarding.next" = "Далее";
+"onboarding.back" = "Назад";
+"onboarding.done" = "Готово";
+
+// MARK: - Birth Data
+"birth.data.title" = "Данные рождения";
+"birth.data.date" = "Дата рождения";
+"birth.data.time" = "Время рождения";
+"birth.data.location" = "Место рождения";
+"birth.data.city.search" = "Поиск города";
+"birth.data.timezone" = "Часовой пояс";
+"birth.data.time.unknown" = "Время неизвестно";
+"birth.data.save" = "Сохранить";
+"birth.data.cancel" = "Отмена";
+
+// MARK: - Chart
+"chart.title" = "Карта";
+"chart.planets" = "Планеты";
+"chart.houses" = "Дома";
+"chart.aspects" = "Аспекты";
+"chart.education" = "Обучение";
+"chart.loading" = "Читаем звезды...";
+"chart.error" = "Ошибка загрузки карты";
+"chart.retry" = "Повторить";
+
+// MARK: - Today/Horoscope
+"today.title" = "Сегодня";
+"today.horoscope" = "Гороскоп";
+"today.transits" = "Транзиты";
+"today.advice" = "Совет дня";
+"today.lucky.numbers" = "Счастливые числа";
+"today.lucky.colors" = "Счастливые цвета";
+"today.energy.level" = "Уровень энергии";
+"today.loading" = "Загрузка гороскопа...";
+
+// MARK: - Profile
+"profile.title" = "Профиль";
+"profile.settings" = "Настройки";
+"profile.birth.data" = "Данные рождения";
+"profile.notifications" = "Уведомления";
+"profile.subscription" = "Подписка";
+"profile.logout" = "Выйти";
+"profile.delete.account" = "Удалить аккаунт";
+
+// MARK: - Subscription
+"subscription.title" = "Подписка";
+"subscription.free" = "Бесплатно";
+"subscription.pro" = "PRO";
+"subscription.guru" = "GURU";
+"subscription.restore" = "Восстановить покупки";
+"subscription.terms" = "Условия использования";
+"subscription.privacy" = "Политика конфиденциальности";
+
+// MARK: - Common
+"common.ok" = "OK";
+"common.cancel" = "Отмена";
+"common.save" = "Сохранить";
+"common.delete" = "Удалить";
+"common.edit" = "Редактировать";
+"common.done" = "Готово";
+"common.loading" = "Загрузка...";
+"common.error" = "Ошибка";
+"common.retry" = "Повторить";
+"common.close" = "Закрыть";
+"common.next" = "Далее";
+"common.back" = "Назад";
+"common.skip" = "Пропустить";
+"common.yes" = "Да";
+"common.no" = "Нет";
+
+// MARK: - Zodiac Signs
+"zodiac.aries" = "Овен";
+"zodiac.taurus" = "Телец";
+"zodiac.gemini" = "Близнецы";
+"zodiac.cancer" = "Рак";
+"zodiac.leo" = "Лев";
+"zodiac.virgo" = "Дева";
+"zodiac.libra" = "Весы";
+"zodiac.scorpio" = "Скорпион";
+"zodiac.sagittarius" = "Стрелец";
+"zodiac.capricorn" = "Козерог";
+"zodiac.aquarius" = "Водолей";
+"zodiac.pisces" = "Рыбы";
+
+// MARK: - Planets
+"planet.sun" = "Солнце";
+"planet.moon" = "Луна";
+"planet.mercury" = "Меркурий";
+"planet.venus" = "Венера";
+"planet.mars" = "Марс";
+"planet.jupiter" = "Юпитер";
+"planet.saturn" = "Сатурн";
+"planet.uranus" = "Уран";
+"planet.neptune" = "Нептун";
+"planet.pluto" = "Плутон";
+"planet.ascendant" = "Асцендент";
+"planet.midheaven" = "Середина неба";
+"planet.north.node" = "Северный узел";
+
+// MARK: - Tab Bar
+"tab.today" = "Сегодня";
+"tab.chart" = "Карта";
+"tab.social" = "Соцсети";
+"tab.mindfulness" = "Медитация";
+"tab.profile" = "Профиль";
