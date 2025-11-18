@@ -889,6 +889,245 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         ]
     }
 
+    // MARK: - New Methods for Detailed Main Screen
+
+    func generateDetailedHoroscope(for chart: BirthChart, date: Date) async throws -> DetailedHoroscope {
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+
+        let sunSign = chart.sunSign
+        let calendar = Calendar.current
+        let dayOfWeek = calendar.component(.weekday, from: date)
+
+        return DetailedHoroscope(
+            date: date,
+            greeting: generateGreeting(for: sunSign),
+            generalForecast: generateGeneralForecast(for: sunSign, dayOfWeek: dayOfWeek),
+            careerAndFinances: getCareerTexts(for: sunSign).randomElement() ?? "",
+            loveAndRelationships: getLoveTexts(for: sunSign).randomElement() ?? "",
+            healthAndEnergy: getHealthTexts(for: sunSign).randomElement() ?? "",
+            friendsAndSocial: generateSocialText(for: sunSign),
+            todoList: generateTodoList(for: sunSign),
+            avoidList: generateAvoidList(for: sunSign),
+            bestTimeRanges: [
+                .create(startHour: 9, endHour: 12),
+                .create(startHour: 19, endHour: 21)
+            ],
+            luckyColors: generateLuckyColors(for: sunSign),
+            luckyNumber: Int.random(in: 1...9)
+        )
+    }
+
+    func getCurrentAspects() async throws -> [Aspect] {
+        // Return mock aspects from birth chart
+        return []
+    }
+
+    func getRetrogradePlanets() async throws -> [PlanetType] {
+        return [.mercury] // Mock retrograde Mercury
+    }
+
+    func getCurrentMoonPosition() async throws -> MoonPosition {
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        return MoonPosition(
+            zodiacSign: .virgo,
+            degree: 15.5,
+            dayOfCycle: 21,
+            phase: .waningGibbous
+        )
+    }
+
+    func calculatePersonalTransits(for chart: BirthChart) async throws -> [Transit] {
+        try await getCurrentTransits()
+        // Convert DailyTransit to Transit
+        let dailyTransits = try await getCurrentTransits()
+        return dailyTransits.compactMap { dailyTransit in
+            guard let natalPlanet = dailyTransit.natalPlanet,
+                  let aspectType = dailyTransit.aspectType else {
+                return nil
+            }
+
+            return Transit(
+                transitingPlanet: dailyTransit.planet,
+                natalPlanet: natalPlanet,
+                aspectType: aspectType,
+                orb: 2.0,
+                influence: .harmonious,
+                duration: DateInterval(start: dailyTransit.startDate, end: dailyTransit.endDate),
+                peak: Date(),
+                interpretation: dailyTransit.description,
+                humanDescription: dailyTransit.influence,
+                emoji: "✨"
+            )
+        }
+    }
+
+    func getKeyEnergies(for date: Date) async throws -> [KeyEnergy] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        return [
+            KeyEnergy(
+                type: .aspect,
+                icon: "💫",
+                title: "Венера-Юпитер",
+                description: "Гармоничный аспект приносит удачу в отношениях",
+                duration: "Сегодня",
+                area: "Любовь, финансы",
+                peakTime: "14:00-18:00",
+                significance: 0.9
+            ),
+            KeyEnergy(
+                type: .planetary,
+                icon: "🔴",
+                title: "Марс в действии",
+                description: "Сильная энергия для действий и принятия решений",
+                duration: "До 31 октября",
+                area: "Карьера, амбиции",
+                significance: 0.8
+            ),
+            KeyEnergy(
+                type: .retrograde,
+                icon: "⚠️",
+                title: "Меркурий замедляется",
+                description: "Проверяйте детали, перечитывайте сообщения",
+                duration: "С 5 ноября",
+                area: "Коммуникация, техника",
+                significance: 0.7
+            )
+        ]
+    }
+
+    func getMoonData(for date: Date) async throws -> MoonData {
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        return MoonData(
+            phase: .waningGibbous,
+            zodiacSign: .virgo,
+            dayOfCycle: 21,
+            recommendations: [
+                "Завершайте начатые проекты",
+                "Наводите порядок в делах и пространстве",
+                "Анализируйте прошедший месяц",
+                "Планируйте следующий цикл"
+            ],
+            warnings: [
+                "Не начинайте глобально новое",
+                "Избегайте больших трат",
+                "Отложите важные контракты"
+            ],
+            nextPhase: NextPhaseInfo(
+                name: "Новолуние",
+                countdown: "5 дней 14 часов",
+                zodiacSign: "Скорпион",
+                description: "Время для глубоких изменений"
+            ),
+            voidOfCourse: .create(startHour: 15, startMinute: 30, endHour: 19, endMinute: 0)
+        )
+    }
+
+    func getDailyAdvice(for chart: BirthChart, date: Date) async throws -> DailyAdvice {
+        try await Task.sleep(nanoseconds: 300_000_000)
+
+        let adviceTypes: [AdviceType] = [.affirmation, .practicalAdvice, .warning, .challenge]
+        let selectedType = adviceTypes.randomElement() ?? .affirmation
+
+        switch selectedType {
+        case .affirmation:
+            return DailyAdvice(
+                type: .affirmation,
+                content: "Я открыт новым возможностям и доверяю своей интуиции. Сегодняшняя энергия поддерживает смелые решения и новые начинания."
+            )
+        case .practicalAdvice:
+            return DailyAdvice(
+                type: .practicalAdvice,
+                content: "Сегодня благоприятное время для важных переговоров. Лучшие часы: 10:00-13:00. Подготовьтесь заранее, будьте уверены в своих аргументах.",
+                source: "Меркурий в гармонии с Юпитером"
+            )
+        case .warning:
+            return DailyAdvice(
+                type: .warning,
+                content: """
+                Меркурий образует напряженный аспект с Сатурном.
+
+                Возможны:
+                • Задержки в коммуникации
+                • Технические сбои
+                • Недопонимания
+
+                Решение: Перепроверяйте детали, делайте резервные копии
+                """,
+                source: "Меркурий квадрат Сатурн"
+            )
+        case .challenge:
+            return DailyAdvice(
+                type: .challenge,
+                content: "Выйдите из зоны комфорта сегодня. Начните разговор с человеком, с которым давно хотели познакомиться, или попробуйте что-то новое в работе."
+            )
+        }
+    }
+
+    // MARK: - Helper Methods for Detailed Horoscope
+
+    private func generateGreeting(for sign: ZodiacSign) -> String {
+        let greetings = [
+            "Доброе утро! Сегодня особенный день для вас.",
+            "Приветствую вас! Звезды приготовили для вас интересный день.",
+            "Здравствуйте! Сегодня энергии располагают к новым начинаниям.",
+            "Добро пожаловать в новый день! Планеты поддерживают ваши начинания."
+        ]
+        return greetings.randomElement() ?? greetings[0]
+    }
+
+    private func generateGeneralForecast(for sign: ZodiacSign, dayOfWeek: Int) -> String {
+        let generalTexts = getGeneralTexts(for: sign)
+        let base = generalTexts.randomElement() ?? ""
+
+        return """
+        Венера в вашем 7-м доме создает благоприятную атмосферу для отношений. Это отличное время, чтобы провести вечер с любимым человеком или наладить контакт с кем-то важным. Вы будете чувствовать себя особенно привлекательно и харизматично.
+
+        Марс поддерживает ваши карьерные амбиции. Если вы давно думали о разговоре с руководством или о запуске нового проекта — действуйте сегодня. Энергия на вашей стороне.
+
+        Луна помогает навести порядок в делах и завершить начатое. Используйте это время для систематизации и планирования.
+        """
+    }
+
+    private func generateSocialText(for sign: ZodiacSign) -> String {
+        let socialTexts = [
+            "Хороший день для знакомств. Кто-то из старых друзей может выйти на связь. Будьте открыты новым предложениям.",
+            "Социальные связи принесут новые возможности. Не отказывайтесь от приглашений на мероприятия.",
+            "День благоприятствует групповой работе. Командные проекты принесут лучшие результаты.",
+            "Дружеская поддержка будет особенно ценна сегодня. Не стесняйтесь просить о помощи."
+        ]
+        return socialTexts.randomElement() ?? socialTexts[0]
+    }
+
+    private func generateTodoList(for sign: ZodiacSign) -> [String] {
+        let allTodos = [
+            "Назначьте важную встречу на утро",
+            "Проведите время с партнером вечером",
+            "Займитесь творческим проектом",
+            "Позвоните старому другу",
+            "Начните новое хобби или обучение",
+            "Сделайте что-то приятное для себя",
+            "Наведите порядок в делах",
+            "Запланируйте выходные"
+        ]
+        return Array(allTodos.shuffled().prefix(4))
+    }
+
+    private func generateAvoidList(for sign: ZodiacSign) -> [String] {
+        let allAvoid = [
+            "Импульсивных покупок после 18:00",
+            "Конфликтов с коллегами",
+            "Серьезных финансовых решений в спешке",
+            "Критики близких людей",
+            "Откладывания важных дел на потом",
+            "Переедания и нарушения режима",
+            "Негативных новостей перед сном"
+        ]
+        return Array(allAvoid.shuffled().prefix(3))
+    }
+
     // Простейший генератор псевдослучайных чисел с семенем
     struct SeededRandomNumberGenerator: RandomNumberGenerator {
         private var state: UInt64

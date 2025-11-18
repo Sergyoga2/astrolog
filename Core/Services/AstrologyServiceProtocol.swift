@@ -12,6 +12,16 @@ protocol AstrologyServiceProtocol {
     func generateDailyHoroscope(for sunSign: ZodiacSign, date: Date) async throws -> DailyHoroscope
     func calculateCompatibility(chart1: BirthChart, chart2: BirthChart) async throws -> CompatibilityResult
     func getCurrentTransits() async throws -> [DailyTransit]
+
+    // New methods for detailed main screen
+    func generateDetailedHoroscope(for chart: BirthChart, date: Date) async throws -> DetailedHoroscope
+    func getCurrentAspects() async throws -> [Aspect]
+    func getRetrogradePlanets() async throws -> [PlanetType]
+    func getCurrentMoonPosition() async throws -> MoonPosition
+    func calculatePersonalTransits(for chart: BirthChart) async throws -> [Transit]
+    func getKeyEnergies(for date: Date) async throws -> [KeyEnergy]
+    func getMoonData(for date: Date) async throws -> MoonData
+    func getDailyAdvice(for chart: BirthChart, date: Date) async throws -> DailyAdvice
 }
 
 // Новые модели для гороскопов
@@ -62,4 +72,12 @@ struct DailyTransit: Codable, Identifiable {
     let description: String
     let influence: String
     let influenceLevel: Int  // 1-5 уровень влияния
+}
+
+// MARK: - Moon Position
+struct MoonPosition: Codable {
+    let zodiacSign: ZodiacSign
+    let degree: Double
+    let dayOfCycle: Int
+    let phase: MoonPhase
 }
