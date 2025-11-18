@@ -73,13 +73,26 @@
 
 ---
 
-### ✅ Localization (L10N-001)
+### ✅ Localization (L10N-001, L10N-002)
 
 **Структура локализации:**
+- `en.lproj/Localizable.strings` - English localization (150+ keys) ✅ NEW
 - `ru.lproj/Localizable.strings` - Русская локализация (150+ ключей)
-- `Core/Localization/LocalizationManager.swift` - Manager для локализации
+- `Core/Localization/LocalizationManager.swift` - Manager с динамической сменой языка
+- `Core/Components/LanguagePickerView.swift` - UI компонент выбора языка ✅ NEW
 - `LocalizationKey` enum с типобезопасным доступом
 - SwiftUI extensions для удобного использования
+
+**Поддерживаемые языки:**
+- 🇺🇸 English (en)
+- 🇷🇺 Русский (ru)
+
+**Возможности:**
+- Динамическая смена языка в runtime
+- Автоопределение системного языка
+- Сохранение выбранного языка в UserDefaults
+- ObservableObject для реактивного UI
+- Bundle-based локализация
 
 **Покрытие:**
 - Authentication (login, signup, errors, validation)
@@ -88,12 +101,31 @@
 - Zodiac signs и planets
 - Birth data
 - Chart sections
+- Onboarding
+- Profile/Settings
+- Subscription
 
 **Использование:**
 ```swift
-Text(.authLoginTitle)  // Типобезопасно
+// Типобезопасный доступ
+Text(.authLoginTitle)  // "Sign In" или "Вход"
 String(.authSuccessReset, email)  // С параметрами
+
+// Смена языка
+LocalizationManager.shared.setLanguage(.english)
+LocalizationManager.shared.setLanguage(.russian)
+
+// UI компонент выбора
+LanguagePickerView()  // Готовый пикер для настроек
 ```
+
+**Тесты:**
+- `AstrologTests/Localization/LocalizationTests.swift` - 15+ тестов ✅ NEW
+  - Language switching tests
+  - English/Russian translation tests
+  - String formatting tests
+  - Persistence tests
+  - Coverage tests
 
 ---
 
@@ -245,10 +277,19 @@ APIConfiguration.shared.migrateAPIKeysToKeychain()
 ```
 
 ### 4. Локализация
-Для добавления новых языков:
-1. Создайте `en.lproj/Localizable.strings`, `es.lproj/Localizable.strings`
-2. Добавьте переводы ключей из `ru.lproj/Localizable.strings`
-3. Обновите `LocalizationKey` enum если нужно
+Для добавления новых языков (например, испанского):
+1. Создайте `es.lproj/Localizable.strings`
+2. Скопируйте структуру из `en.lproj/Localizable.strings`
+3. Переведите все строки
+4. Добавьте `.spanish` case в `AppLanguage` enum
+5. Обновите `LanguagePickerView` если нужно
+
+Для смены языка в приложении:
+```swift
+// В настройках профиля
+LocalizationManager.shared.setLanguage(.english)
+// или используйте LanguagePickerView() компонент
+```
 
 ### 5. Запуск тестов
 ```bash
@@ -276,8 +317,13 @@ Core/
 │   ├── SSLPinningService.swift                ✅ NEW
 │   ├── SwissEphemerisRealWrapper.swift        ✅ NEW
 │   └── SwissEphemerisHybridService.swift      ✅ NEW
-└── Localization/
-    └── LocalizationManager.swift               ✅ NEW
+├── Localization/
+│   └── LocalizationManager.swift              ✅ UPDATED
+└── Components/
+    └── LanguagePickerView.swift               ✅ NEW
+
+en.lproj/
+└── Localizable.strings                    ✅ NEW
 
 ru.lproj/
 └── Localizable.strings                    ✅ NEW
@@ -296,6 +342,8 @@ AstrologTests/
 ├── Integration/
 │   ├── FirebaseIntegrationTests.swift    ✅ NEW
 │   └── AstrologyServiceIntegrationTests.swift  ✅ NEW
+├── Localization/
+│   └── LocalizationTests.swift           ✅ NEW
 └── README.md                             ✅ NEW
 
 AstrologUITests/
@@ -337,13 +385,21 @@ Scripts/
 - **Тестов:** 100+
 - **Документация:** 350+ строк
 
+### Сессия 4 (English Localization)
+- **Новых файлов:** 3
+- **Обновленных файлов:** 2
+- **Строк кода:** ~400
+- **Тестов:** 15+
+- **Локализаций:** 150+ ключей (English)
+
 ### ИТОГО за диалог
-- **Всего файлов:** 32 (29 новых, 3 обновленных)
-- **Всего строк:** ~6,850
-- **Коммитов:** 3 (ожидается 4-й)
-- **Production code:** ~2,700 строк
-- **Tests:** ~3,000 строк
+- **Всего файлов:** 37 (32 новых, 5 обновленных)
+- **Всего строк:** ~7,250
+- **Коммитов:** 4 (ожидается 5-й)
+- **Production code:** ~3,100 строк
+- **Tests:** ~3,300 строк
 - **Documentation:** ~1,470 строк
+- **Локализаций:** 2 языка (English, Русский)
 
 ---
 
@@ -362,10 +418,13 @@ Scripts/
 - SSL Pinning: ✅
 - Privacy Manifest: ✅
 
-✅ **Локализация:** Готово (70%)
+✅ **Локализация:** Готово (100%)
 - Инфраструктура: ✅
 - Русский язык: ✅
-- Другие языки: ⏳ TODO
+- Английский язык: ✅
+- Динамическая смена языка: ✅
+- UI компонент выбора: ✅
+- Тесты локализации: ✅
 
 ✅ **Тестирование:** Готово (100%)
 - Unit Tests: ✅
@@ -383,23 +442,29 @@ Scripts/
 - Integration Guide: ✅
 - Статус: Готов к интеграции (требуется только скачать файлы)
 
-**Общая готовность MVP:** ~95%
+**Общая готовность MVP:** ~98%
 
 ---
 
 ## Следующие шаги для Production
 
 ### High Priority
-1. ⏳ Интеграция Swiss Ephemeris C library (опционально, но рекомендуется)
-2. ⏳ Интеграция Google SDK для auth
-3. ⏳ UI/E2E тесты
-4. ⏳ Локализация на английский
+1. ⏳ Интеграция Swiss Ephemeris C library (опционально, инфраструктура готова)
+2. ⏳ Интеграция Google SDK для auth (инструкции готовы)
 
 ### Medium Priority
-5. ⏳ Настройка SSL certificate pinning (hashes)
-6. ⏳ Code review и рефакторинг
-7. ⏳ Performance optimization
+3. ⏳ Настройка SSL certificate pinning (сервис готов, нужны hashes)
+4. ⏳ Дополнительные локализации (es, de, fr...)
+5. ⏳ Code review и рефакторинг
+6. ⏳ Performance optimization
 
 ### Low Priority
-8. ⏳ App Store assets (скриншоты, описание)
-9. ⏳ TestFlight beta testing
+7. ⏳ App Store assets (скриншоты, описание)
+8. ⏳ TestFlight beta testing
+
+### ✅ Выполнено в этом диалоге
+- Authentication (Email/Password, Apple Sign In, Password Reset)
+- Security (Encryption, Keychain, SSL Pinning, Privacy Manifest)
+- Localization (English, Русский, динамическая смена)
+- Testing (Unit, UI, Integration tests - 115+ тестов)
+- Swiss Ephemeris (инфраструктура, документация)

@@ -1,0 +1,161 @@
+/*
+  Localizable.strings
+  Astrolog
+
+  English localization
+*/
+
+// MARK: - Authentication
+"auth.login.title" = "Sign In";
+"auth.signup.title" = "Sign Up";
+"auth.email.placeholder" = "Email";
+"auth.password.placeholder" = "Password";
+"auth.password.confirm" = "Confirm Password";
+"auth.login.button" = "Sign In";
+"auth.signup.button" = "Sign Up";
+"auth.forgot.password" = "Forgot Password?";
+"auth.reset.password.title" = "Reset Password";
+"auth.reset.password.message" = "Instructions will be sent to:";
+"auth.send" = "Send";
+"auth.cancel" = "Cancel";
+"auth.anonymous.button" = "Continue Without Registration";
+"auth.welcome.message" = "Welcome to Astrolog";
+"auth.create.profile" = "Create Your Astrological Profile";
+"auth.sign.in.apple" = "Sign in with Apple";
+"auth.sign.in.google" = "Sign in with Google";
+"auth.or" = "or";
+"auth.no.account" = "Don't have an account?";
+"auth.have.account" = "Already have an account?";
+"auth.signup.link" = "Sign Up";
+"auth.login.link" = "Sign In";
+
+// Validation
+"auth.validation.password.min" = "Minimum 6 characters";
+"auth.validation.password.match" = "Passwords match";
+"auth.validation.email.invalid" = "Enter a valid email";
+
+// Errors
+"auth.error.title" = "Error";
+"auth.error.ok" = "OK";
+"auth.error.email.used" = "This email is already registered";
+"auth.error.email.invalid" = "Invalid email format";
+"auth.error.password.wrong" = "Incorrect password";
+"auth.error.user.not.found" = "User not found";
+"auth.error.password.weak" = "Password too weak (minimum 6 characters)";
+"auth.error.anonymous.failed" = "Failed to sign in anonymously";
+"auth.error.apple.failed" = "Failed to sign in with Apple";
+"auth.error.google.failed" = "Failed to sign in with Google";
+"auth.error.reset.failed" = "Failed to send email";
+"auth.success.reset" = "Instructions sent to";
+"auth.success.verification" = "Verification email sent";
+
+// MARK: - Onboarding
+"onboarding.welcome.title" = "Welcome";
+"onboarding.features.title" = "Features";
+"onboarding.start.button" = "Get Started";
+"onboarding.skip" = "Skip";
+"onboarding.next" = "Next";
+"onboarding.back" = "Back";
+"onboarding.done" = "Done";
+
+// MARK: - Birth Data
+"birth.data.title" = "Birth Data";
+"birth.data.date" = "Birth Date";
+"birth.data.time" = "Birth Time";
+"birth.data.location" = "Birth Location";
+"birth.data.city.search" = "Search City";
+"birth.data.timezone" = "Timezone";
+"birth.data.time.unknown" = "Time Unknown";
+"birth.data.save" = "Save";
+"birth.data.cancel" = "Cancel";
+
+// MARK: - Chart
+"chart.title" = "Chart";
+"chart.planets" = "Planets";
+"chart.houses" = "Houses";
+"chart.aspects" = "Aspects";
+"chart.education" = "Education";
+"chart.loading" = "Reading the stars...";
+"chart.error" = "Failed to load chart";
+"chart.retry" = "Retry";
+
+// MARK: - Today/Horoscope
+"today.title" = "Today";
+"today.horoscope" = "Horoscope";
+"today.transits" = "Transits";
+"today.advice" = "Daily Advice";
+"today.lucky.numbers" = "Lucky Numbers";
+"today.lucky.colors" = "Lucky Colors";
+"today.energy.level" = "Energy Level";
+"today.loading" = "Loading horoscope...";
+
+// MARK: - Profile
+"profile.title" = "Profile";
+"profile.settings" = "Settings";
+"profile.birth.data" = "Birth Data";
+"profile.notifications" = "Notifications";
+"profile.subscription" = "Subscription";
+"profile.logout" = "Sign Out";
+"profile.delete.account" = "Delete Account";
+
+// MARK: - Subscription
+"subscription.title" = "Subscription";
+"subscription.free" = "Free";
+"subscription.pro" = "PRO";
+"subscription.guru" = "GURU";
+"subscription.restore" = "Restore Purchases";
+"subscription.terms" = "Terms of Service";
+"subscription.privacy" = "Privacy Policy";
+
+// MARK: - Common
+"common.ok" = "OK";
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.done" = "Done";
+"common.loading" = "Loading...";
+"common.error" = "Error";
+"common.retry" = "Retry";
+"common.close" = "Close";
+"common.next" = "Next";
+"common.back" = "Back";
+"common.skip" = "Skip";
+"common.yes" = "Yes";
+"common.no" = "No";
+
+// MARK: - Zodiac Signs
+"zodiac.aries" = "Aries";
+"zodiac.taurus" = "Taurus";
+"zodiac.gemini" = "Gemini";
+"zodiac.cancer" = "Cancer";
+"zodiac.leo" = "Leo";
+"zodiac.virgo" = "Virgo";
+"zodiac.libra" = "Libra";
+"zodiac.scorpio" = "Scorpio";
+"zodiac.sagittarius" = "Sagittarius";
+"zodiac.capricorn" = "Capricorn";
+"zodiac.aquarius" = "Aquarius";
+"zodiac.pisces" = "Pisces";
+
+// MARK: - Planets
+"planet.sun" = "Sun";
+"planet.moon" = "Moon";
+"planet.mercury" = "Mercury";
+"planet.venus" = "Venus";
+"planet.mars" = "Mars";
+"planet.jupiter" = "Jupiter";
+"planet.saturn" = "Saturn";
+"planet.uranus" = "Uranus";
+"planet.neptune" = "Neptune";
+"planet.pluto" = "Pluto";
+"planet.ascendant" = "Ascendant";
+"planet.midheaven" = "Midheaven";
+"planet.north.node" = "North Node";
+
+// MARK: - Tab Bar
+"tab.today" = "Today";
+"tab.chart" = "Chart";
+"tab.social" = "Social";
+"tab.mindfulness" = "Mindfulness";
+"tab.profile" = "Profile";

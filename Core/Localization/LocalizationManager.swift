@@ -1,20 +1,91 @@
 import Foundation
 import SwiftUI
+import Combine
 
-/// Manager for app localization
-final class LocalizationManager {
+/// Manager for app localization with dynamic language switching
+final class LocalizationManager: ObservableObject {
     static let shared = LocalizationManager()
 
-    private init() {}
+    @Published var currentLanguage: AppLanguage {
+        didSet {
+            UserDefaults.standard.set(currentLanguage.code, forKey: "app_language")
+            updateBundle()
+        }
+    }
+
+    private var bundle: Bundle = Bundle.main
+
+    private init() {
+        // Load saved language or use system default
+        if let savedLanguageCode = UserDefaults.standard.string(forKey: "app_language"),
+           let savedLanguage = AppLanguage.allCases.first(where: { $0.code == savedLanguageCode }) {
+            self.currentLanguage = savedLanguage
+        } else {
+            // Use system language if supported, otherwise default to English
+            let systemLanguage = Locale.current.language.languageCode?.identifier ?? "en"
+            if let matchedLanguage = AppLanguage.allCases.first(where: { $0.code == systemLanguage }) {
+                self.currentLanguage = matchedLanguage
+            } else {
+                self.currentLanguage = .english
+            }
+        }
+        updateBundle()
+    }
 
     /// Returns localized string for key
     func string(for key: LocalizationKey) -> String {
-        NSLocalizedString(key.rawValue, comment: key.comment)
+        bundle.localizedString(forKey: key.rawValue, value: key.rawValue, table: nil)
     }
 
     /// Returns localized string with arguments
     func string(for key: LocalizationKey, _ arguments: CVarArg...) -> String {
-        String(format: NSLocalizedString(key.rawValue, comment: key.comment), arguments: arguments)
+        let format = bundle.localizedString(forKey: key.rawValue, value: key.rawValue, table: nil)
+        return String(format: format, arguments: arguments)
+    }
+
+    /// Change app language
+    func setLanguage(_ language: AppLanguage) {
+        currentLanguage = language
+    }
+
+    /// Update bundle for current language
+    private func updateBundle() {
+        if let path = Bundle.main.path(forResource: currentLanguage.code, ofType: "lproj"),
+           let languageBundle = Bundle(path: path) {
+            bundle = languageBundle
+        } else {
+            bundle = Bundle.main
+        }
+    }
+}
+
+// MARK: - App Language
+
+enum AppLanguage: String, CaseIterable, Identifiable {
+    case english = "English"
+    case russian = "Русский"
+
+    var id: String { rawValue }
+
+    var code: String {
+        switch self {
+        case .english: return "en"
+        case .russian: return "ru"
+        }
+    }
+
+    var flag: String {
+        switch self {
+        case .english: return "🇺🇸"
+        case .russian: return "🇷🇺"
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .english: return "English"
+        case .russian: return "Русский"
+        }
     }
 }
 
