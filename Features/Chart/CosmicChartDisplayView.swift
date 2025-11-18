@@ -296,8 +296,8 @@ struct CosmicAspectsLayer: View {
             }
 
             for (index, aspect) in majorAspects.enumerated() {
-                guard let planet1 = chart.planets.first(where: { $0.type == aspect.planet1 }),
-                      let planet2 = chart.planets.first(where: { $0.type == aspect.planet2 }) else {
+                guard let planet1 = chart.planets.first(where: { $0.type == aspect.planet1Type }),
+                      let planet2 = chart.planets.first(where: { $0.type == aspect.planet2Type }) else {
                     continue
                 }
 

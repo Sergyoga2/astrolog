@@ -7,328 +7,193 @@
 // Features/Chart/ChartView.swift
 import SwiftUI
 
+/// Главный экран натальной карты с новой архитектурой
 struct ChartView: View {
-    @StateObject private var viewModel = ChartViewModel()
+    @StateObject private var viewModel: ChartViewModel
+    @StateObject private var displayModeManager: ChartDisplayModeManager
+    @StateObject private var tooltipService: TooltipService
+    @StateObject private var tabState: ChartTabState
+    @StateObject private var onboardingCoordinator: ChartOnboardingCoordinator
+
+    // Инициализатор для правильной инициализации зависимостей
+    init() {
+        let displayModeManager = ChartDisplayModeManager()
+        let tabState = ChartTabState(displayModeManager: displayModeManager)
+
+        self._viewModel = StateObject(wrappedValue: ChartViewModel())
+        self._displayModeManager = StateObject(wrappedValue: displayModeManager)
+        self._tooltipService = StateObject(wrappedValue: TooltipService())
+        self._tabState = StateObject(wrappedValue: tabState)
+
+        // Создаем координатор онбординга с пустой картой по умолчанию
+        // Реальная карта будет установлена в onAppear
+        let mockChart = BirthChart.mock
+        self._onboardingCoordinator = StateObject(
+            wrappedValue: ChartOnboardingCoordinator(
+                birthChart: mockChart,
+                displayModeManager: displayModeManager
+            )
+        )
+    }
 
     var body: some View {
         ZStack {
+            // Космический фон
             StarfieldBackground()
                 .ignoresSafeArea()
 
-            GeometryReader { geometry in
-                ScrollView {
-                VStack(spacing: CosmicSpacing.large) {
-                    if viewModel.hasBirthData {
-                        if let chart = viewModel.birthChart {
-                            // Интерактивная космическая натальная карта
-                            VStack(spacing: CosmicSpacing.large) {
-                                CosmicSectionHeader(
-                                    "Ваша натальная карта",
-                                    subtitle: "Коснитесь планет для подробной информации",
-                                    icon: "star.circle"
-                                )
-
-                                CosmicChartDisplayView(chart: chart)
-                                    .frame(height: min(geometry.size.width, 400))
-                                    .clipShape(RoundedRectangle(cornerRadius: 20))
-
-                                // Дополнительная информация
-                                MainChartInfoCard(chart: chart)
-                                PlanetsSection(planets: chart.planets)
-                                HousesSection(houses: chart.houses)
-                                AspectsSection(aspects: chart.aspects)
-                            }
-                        } else if viewModel.isLoading {
-                            CosmicLoadingView()
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if viewModel.hasBirthData {
+                if let chart = viewModel.birthChart {
+                    modernChartInterface(chart: chart)
+                        .onAppear {
+                            setupOnboardingIfNeeded(for: chart)
                         }
-                    } else {
-                        // Приглашение ввести данные рождения
-                        NoBirthDataView()
-                    }
+                } else if viewModel.isLoading {
+                    CosmicLoadingView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .padding(.horizontal, CosmicSpacing.medium)
+            } else {
+                NoBirthDataView()
+                    .padding(.horizontal, CosmicSpacing.medium)
             }
+
+            // Система подсказок (поверх всего контента)
+            TooltipOverlay(tooltipService: tooltipService)
+
+            // Система онбординга (поверх всего интерфейса)
+            if onboardingCoordinator.isActive {
+                onboardingOverlay
+                    .zIndex(1000) // Поверх всех элементов
+            }
+
+            // Debug overlay для тестирования онбординга (только в DEBUG сборках)
+            #if DEBUG
+            debugOnboardingButton
+                .zIndex(999)
+            #endif
         }
-        .background(Color.clear)
+        .environmentObject(displayModeManager.interpretationEngine)
+        .environmentObject(tooltipService)
+        .onAppear {
+            setupTooltipPresets()
         }
     }
-}
 
-
-// MARK: - Карточка основной информации карты
-struct MainChartInfoCard: View {
-    let chart: BirthChart
-
-    var body: some View {
-        CosmicCard(glowColor: .cosmicViolet) {
-            VStack(spacing: CosmicSpacing.large) {
-                // Основная троица
-                HStack(spacing: CosmicSpacing.large) {
-                    VStack(spacing: CosmicSpacing.small) {
-                        Text("☉")
-                            .font(CosmicTypography.zodiacSymbol)
-                            .foregroundColor(.starYellow)
-
-                        Text("Солнце")
-                            .font(CosmicTypography.caption)
-                            .foregroundColor(.starWhite.opacity(0.8))
-
-                        ZodiacSignBadge(sign: chart.sunSign)
-                    }
-
-                    VStack(spacing: CosmicSpacing.small) {
-                        Text("☽")
-                            .font(CosmicTypography.zodiacSymbol)
-                            .foregroundColor(.starWhite)
-
-                        Text("Луна")
-                            .font(CosmicTypography.caption)
-                            .foregroundColor(.starWhite.opacity(0.8))
-
-                        ZodiacSignBadge(sign: chart.moonSign)
-                    }
-
-                    VStack(spacing: CosmicSpacing.small) {
-                        Text("↗")
-                            .font(CosmicTypography.zodiacSymbol)
-                            .foregroundColor(.neonPurple)
-
-                        Text("Асцендент")
-                            .font(CosmicTypography.caption)
-                            .foregroundColor(.starWhite.opacity(0.8))
-
-                        ZodiacSignBadge(sign: chart.ascendant)
-                    }
-                }
-                .padding(.horizontal, CosmicSpacing.large)
-
-                CosmicDivider()
-
-                // Краткая интерпретация
-                VStack(alignment: .leading, spacing: CosmicSpacing.small) {
-                    Text("Ваша космическая подпись")
-                        .font(CosmicTypography.headline)
-                        .foregroundColor(.starWhite)
-
-                    Text("Солнце в \(chart.sunSign.displayName) определяет вашу основную личность, Луна в \(chart.moonSign.displayName) отражает эмоциональную природу, а Асцендент в \(chart.ascendant.displayName) показывает, как вас воспринимают другие.")
-                        .font(CosmicTypography.body)
-                        .foregroundColor(.starWhite.opacity(0.9))
-                        .multilineTextAlignment(.leading)
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Секция планет
-struct PlanetsSection: View {
-    let planets: [Planet]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: CosmicSpacing.medium) {
-            CosmicSectionHeader(
-                "Планеты в знаках",
-                subtitle: "Расположение планет в вашей карте",
-                icon: "sparkles"
+    // MARK: - Modern Chart Interface
+    @ViewBuilder
+    private func modernChartInterface(chart: BirthChart) -> some View {
+        VStack(spacing: 0) {
+            // Заголовок с переключателем режимов
+            ChartHeaderView(
+                birthChart: chart,
+                displayModeManager: displayModeManager
             )
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: CosmicSpacing.medium) {
-                ForEach(planets) { planet in
-                    PlanetCard(planet: planet)
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Карточка планеты
-struct PlanetCard: View {
-    let planet: Planet
-
-    var body: some View {
-        CosmicCard(glowColor: planet.type.color.opacity(0.6)) {
-            VStack(spacing: CosmicSpacing.small) {
-                // Символ планеты
-                PlanetSymbolView(planetType: planet.type)
-                    .frame(width: 50, height: 50)
-
-                // Информация о планете
-                VStack(spacing: 2) {
-                    Text(planet.type.displayName)
-                        .font(CosmicTypography.body)
-                        .foregroundColor(.starWhite)
-                        .fontWeight(.semibold)
-
-                    HStack(spacing: 4) {
-                        Text(planet.zodiacSign.symbol)
-                            .font(CosmicTypography.caption)
-                            .foregroundColor(planet.type.color)
-
-                        Text(planet.zodiacSign.displayName)
-                            .font(CosmicTypography.caption)
-                            .foregroundColor(.starWhite.opacity(0.8))
-                    }
-
-                    Text("\(Int(planet.degreeInSign))°")
-                        .font(.caption2)
-                        .foregroundColor(.starWhite.opacity(0.6))
-                }
-
-                if planet.isRetrograde {
-                    Text("℞")
-                        .font(.caption)
-                        .foregroundColor(.neonPink)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            Capsule()
-                                .fill(.ultraThinMaterial)
-                        )
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Секция домов
-struct HousesSection: View {
-    let houses: [House]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: CosmicSpacing.medium) {
-            CosmicSectionHeader(
-                "Астрологические дома",
-                subtitle: "Сферы жизни в вашей карте",
-                icon: "house"
+            // Панель вкладок
+            ChartTabBar(
+                tabState: tabState,
+                birthChart: chart,
+                displayMode: displayModeManager.currentMode
             )
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: CosmicSpacing.small) {
-                ForEach(houses) { house in
-                    HouseCard(house: house)
-                }
-            }
+            // Содержимое вкладок
+            ChartContentView(
+                tabState: tabState,
+                birthChart: chart,
+                displayModeManager: displayModeManager
+            )
         }
     }
-}
 
-// MARK: - Карточка дома
-struct HouseCard: View {
-    let house: House
-
-    var body: some View {
-        CosmicCard(glowColor: .cosmicPurple.opacity(0.4)) {
-            VStack(spacing: CosmicSpacing.tiny) {
-                Text("Дом \(house.number)")
-                    .font(CosmicTypography.caption)
-                    .foregroundColor(.starWhite)
-                    .fontWeight(.semibold)
-
-                Text(house.zodiacSign.symbol)
-                    .font(CosmicTypography.body)
-                    .foregroundColor(.neonPurple)
-
-                if !house.planetsInHouse.isEmpty {
-                    HStack(spacing: 2) {
-                        ForEach(house.planetsInHouse, id: \.rawValue) { planetType in
-                            Text(planetType.symbol)
-                                .font(.caption2)
-                                .foregroundColor(planetType.color)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Секция аспектов
-struct AspectsSection: View {
-    let aspects: [Aspect]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: CosmicSpacing.medium) {
-            CosmicSectionHeader(
-                "Планетарные аспекты",
-                subtitle: "Взаимодействия между планетами",
-                icon: "arrow.triangle.2.circlepath"
+    // MARK: - Onboarding Overlay
+    @ViewBuilder
+    private var onboardingOverlay: some View {
+        switch onboardingCoordinator.currentStep {
+        case .welcome:
+            OnboardingWelcomeView(
+                coordinator: onboardingCoordinator,
+                birthChart: viewModel.birthChart ?? BirthChart.mock
             )
 
-            LazyVStack(spacing: CosmicSpacing.small) {
-                ForEach(aspects.prefix(6)) { aspect in
-                    AspectRowView(aspect: aspect)
-                }
-            }
+        case .basics:
+            OnboardingBasicsView(
+                coordinator: onboardingCoordinator,
+                birthChart: viewModel.birthChart ?? BirthChart.mock
+            )
+
+        case .personalInsights:
+            OnboardingPersonalView(
+                coordinator: onboardingCoordinator,
+                birthChart: viewModel.birthChart ?? BirthChart.mock
+            )
+
+        case .interactive:
+            OnboardingInteractiveView(
+                coordinator: onboardingCoordinator,
+                birthChart: viewModel.birthChart ?? BirthChart.mock
+            )
         }
     }
-}
 
-// MARK: - Строка аспекта
-struct AspectRowView: View {
-    let aspect: Aspect
-
-    var body: some View {
-        CosmicCard(glowColor: .cosmicCyan.opacity(0.3)) {
-            HStack(spacing: CosmicSpacing.medium) {
-                // Первая планета
-                VStack(spacing: 4) {
-                    Text(aspect.planet1.symbol)
-                        .font(CosmicTypography.body)
-                        .foregroundColor(aspect.planet1.color)
-
-                    Text(aspect.planet1.displayName)
-                        .font(.caption2)
-                        .foregroundColor(.starWhite.opacity(0.7))
-                }
-
-                // Аспект
-                VStack(spacing: 4) {
-                    Text(aspectSymbol(for: aspect.type))
-                        .font(.title2)
-                        .foregroundColor(.neonCyan)
-
-                    Text(aspect.type.rawValue.capitalized)
-                        .font(.caption2)
-                        .foregroundColor(.neonCyan)
-                }
-
-                // Вторая планета
-                VStack(spacing: 4) {
-                    Text(aspect.planet2.symbol)
-                        .font(CosmicTypography.body)
-                        .foregroundColor(aspect.planet2.color)
-
-                    Text(aspect.planet2.displayName)
-                        .font(.caption2)
-                        .foregroundColor(.starWhite.opacity(0.7))
-                }
-
+    // MARK: - Debug Components
+    #if DEBUG
+    @ViewBuilder
+    private var debugOnboardingButton: some View {
+        VStack {
+            HStack {
                 Spacer()
 
-                // Орб
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("Орб")
-                        .font(.caption2)
-                        .foregroundColor(.starWhite.opacity(0.6))
-
-                    Text("\(aspect.orb, specifier: "%.1f")°")
+                Button(action: {
+                    if onboardingCoordinator.isActive {
+                        onboardingCoordinator.completeOnboarding()
+                    } else {
+                        onboardingCoordinator.resetOnboarding()
+                        onboardingCoordinator.startOnboarding()
+                    }
+                }) {
+                    Text(onboardingCoordinator.isActive ? "Skip Onboarding" : "Reset Onboarding")
                         .font(.caption)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(.ultraThinMaterial)
                         .foregroundColor(.starWhite)
+                        .cornerRadius(8)
                 }
+                .padding(.trailing, 16)
+                .padding(.top, 50)
+            }
+
+            Spacer()
+        }
+    }
+    #endif
+
+    // MARK: - Setup Methods
+
+    private func setupOnboardingIfNeeded(for chart: BirthChart) {
+        // Автоматически запускаем онбординг для новых пользователей
+        if !onboardingCoordinator.isCompleted && onboardingCoordinator.userProgress != .inProgress {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                onboardingCoordinator.startOnboarding()
             }
         }
     }
-
-    private func aspectSymbol(for type: AspectType) -> String {
-        switch type {
-        case .conjunction: return "☌"
-        case .sextile: return "⚹"
-        case .square: return "☐"
-        case .trine: return "△"
-        case .opposition: return "☍"
+    private func setupTooltipPresets() {
+        // Применяем подходящие настройки подсказок для текущего режима
+        switch displayModeManager.currentMode {
+        case .human:
+            tooltipService.applyBeginnerPreset() // Используем простые подсказки для режима "Понятно"
+        case .beginner:
+            tooltipService.applyBeginnerPreset()
+        case .intermediate:
+            tooltipService.applyExpertPreset()
         }
     }
 }
+
+
+// MARK: - Legacy Components (сохранены для совместимости)
+// Эти компоненты заменены новой архитектурой, но оставлены для переходного периода
 
 // MARK: - Отсутствуют данные рождения
 struct NoBirthDataView: View {
@@ -341,19 +206,19 @@ struct NoBirthDataView: View {
                     .modifier(NeonGlow(color: .neonPurple, intensity: 1.0))
 
                 VStack(spacing: CosmicSpacing.small) {
-                    Text("Создайте свою натальную карту")
+                    Text("Создадим натальную карту!")
                         .font(CosmicTypography.headline)
                         .foregroundColor(.starWhite)
                         .multilineTextAlignment(.center)
 
-                    Text("Введите данные рождения, чтобы увидеть полную астрологическую карту")
+                    Text("Это быстро и просто - нужны только данные  вашего рождения")
                         .font(CosmicTypography.body)
                         .foregroundColor(.starWhite.opacity(0.8))
                         .multilineTextAlignment(.center)
                 }
 
                 CosmicButton(
-                    title: "Добавить данные рождения",
+                    title: "Хорошо, попробуем!",
                     icon: "plus.circle",
                     color: .neonPurple
                 ) {
@@ -364,3 +229,13 @@ struct NoBirthDataView: View {
         .padding(.top, CosmicSpacing.massive)
     }
 }
+
+// MARK: - Preview
+#if DEBUG
+struct ChartView_Previews: PreviewProvider {
+    static var previews: some View {
+        ChartView()
+            .preferredColorScheme(.dark)
+    }
+}
+#endif

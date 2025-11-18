@@ -155,34 +155,34 @@ struct TransitsSection: View {
                 .padding(.horizontal)
             
             ForEach(transits) { transit in
-                TransitCard(transit: transit)
+                MainTransitCard(transit: transit)
             }
         }
     }
 }
 
-struct TransitCard: View {
+struct MainTransitCard: View {
     let transit: Transit
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("\(transit.planet.symbol) \(transit.aspectType?.symbol ?? "-") \(transit.natalPlanet?.symbol ?? "")")
+                Text("\(transit.transitingPlanet.symbol) \(transit.aspectType.symbol) \(transit.natalPlanet?.symbol ?? "")")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                 
                 Spacer()
                 
-                Text("до \(transit.endDate, style: .date)")
+                Text("до \(transit.duration.end, style: .date)")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
-            Text(transit.description)
+            Text(transit.interpretation)
                 .font(.caption)
                 .foregroundColor(.primary)
             
-            Text(transit.influence)
+            Text("Влияние: \(String(describing: transit.influence))")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -242,7 +242,12 @@ struct PlanetsListView: View {
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                 ForEach(planets.filter { $0.type != .ascendant && $0.type != .midheaven }) { planet in
-                    PlanetCard(planet: planet)
+                    PlanetCard(
+                        planet: planet,
+                        interpretation: nil,
+                        displayMode: .beginner,
+                        isHighlighted: false
+                    )
                 }
             }
         }
@@ -272,14 +277,14 @@ struct AspectRow: View {
     
     var body: some View {
         HStack {
-            Text("\(aspect.planet1.symbol)")
+            Text("\(aspect.planet1Type.symbol)")
                 .font(.title3)
             
             Text(aspect.type.symbol) // ИСПРАВЛЕНО: aspect.type вместо aspect.aspectType
                 .font(.title3)
                 .foregroundColor(aspect.type.isHarmonic ? .green : .orange) // ИСПРАВЛЕНО: aspect.type
             
-            Text("\(aspect.planet2.symbol)")
+            Text("\(aspect.planet2Type.symbol)")
                 .font(.title3)
             
             Spacer()
@@ -290,5 +295,9 @@ struct AspectRow: View {
         }
         .padding(.vertical, 4)
     }
+}
+
+#Preview {
+    MainTabView()
 }
 

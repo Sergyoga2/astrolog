@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct TodayView: View {
-    @StateObject private var viewModel = TodayViewModel()
+    @StateObject private var viewModel: TodayViewModel
     @State private var headerOffset: CGFloat = 0
+
+    init() {
+        self._viewModel = StateObject(wrappedValue: TodayViewModel())
+    }
 
     var body: some View {
         ZStack {
@@ -298,18 +302,18 @@ struct TransitRowView: View {
     let transit: Transit
 
     var body: some View {
-        CosmicCard(glowColor: transit.planet.color.opacity(0.3)) {
+        CosmicCard(glowColor: transit.transitingPlanet.color.opacity(0.3)) {
             HStack(spacing: CosmicSpacing.medium) {
                 // Символ планеты
-                PlanetSymbolView(planetType: transit.planet)
+                PlanetSymbolView(planetType: transit.transitingPlanet)
                     .frame(width: 40, height: 40)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(transit.planet.displayName) в \(transit.sign.displayName)")
+                    Text("\(transit.transitingPlanet.displayName)")
                         .font(CosmicTypography.body)
                         .foregroundColor(.starWhite)
 
-                    Text(transit.description)
+                    Text(transit.interpretation)
                         .font(CosmicTypography.caption)
                         .foregroundColor(.starWhite.opacity(0.7))
                         .lineLimit(2)
@@ -324,7 +328,7 @@ struct TransitRowView: View {
                         .foregroundColor(.starWhite.opacity(0.6))
 
                     CosmicProgressRing(
-                        progress: Double(transit.influenceLevel) / 5.0,
+                        progress: 0.7, // Fallback value since influenceLevel doesn't exist
                         size: 30
                     )
                 }

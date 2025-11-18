@@ -94,8 +94,8 @@ class MockAstrologyService: ObservableObject {
                     let aspectType = AspectType.allCases.randomElement() ?? .conjunction
                     let aspect = Aspect(
                         id: UUID().uuidString,
-                        planet1: majorPlanets[i],
-                        planet2: majorPlanets[j],
+                        planet1Type: majorPlanets[i],
+                        planet2Type: majorPlanets[j],
                         type: aspectType,
                         orb: Double.random(in: 0...8),
                         isApplying: Bool.random()

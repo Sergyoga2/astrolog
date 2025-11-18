@@ -37,7 +37,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
         }
     }
     
-    func getCurrentTransits() async throws -> [Transit] {
+    func getCurrentTransits() async throws -> [DailyTransit] {
         return try await withCheckedThrowingContinuation { continuation in
             Task.detached {
                 do {
@@ -222,8 +222,8 @@ class SwissEphemerisService: AstrologyServiceProtocol {
                 if let (aspectType, orb) = calculateAspectType(between: planet1.longitude, and: planet2.longitude) {
                     let aspect = Aspect(
                         id: UUID().uuidString,
-                        planet1: planet1.type,
-                        planet2: planet2.type,
+                        planet1Type: planet1.type,
+                        planet2Type: planet2.type,
                         type: aspectType,
                         orb: orb,
                         isApplying: true
@@ -306,7 +306,7 @@ class SwissEphemerisService: AstrologyServiceProtocol {
         }
     }
     
-    private func calculateCurrentTransits() throws -> [Transit] {
+    private func calculateCurrentTransits() throws -> [DailyTransit] {
         return []
     }
     

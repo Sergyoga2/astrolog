@@ -197,26 +197,28 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         
         return [
             Transit(
-                planet: .venus,
-                sign: .taurus,
-                aspectType: .trine,
+                transitingPlanet: .venus,
                 natalPlanet: .sun,
-                startDate: Date(),
-                endDate: Calendar.current.date(byAdding: .day, value: 15, to: Date()) ?? Date(),
-                description: "Венера образует тригон к вашему натальному Солнцу",
-                influence: "Период гармонии в отношениях и творческого вдохновения",
-                influenceLevel: 4
+                aspectType: .trine,
+                orb: 2.5,
+                influence: .harmonious,
+                duration: DateInterval(start: Date(), end: Calendar.current.date(byAdding: .day, value: 15, to: Date()) ?? Date()),
+                peak: Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date(),
+                interpretation: "Венера образует тригон к вашему натальному Солнцу",
+                humanDescription: "Период гармонии в отношениях и творческого вдохновения",
+                emoji: "💕"
             ),
             Transit(
-                planet: .mars,
-                sign: .aries,
-                aspectType: .square,
+                transitingPlanet: .mars,
                 natalPlanet: .mercury,
-                startDate: Date(),
-                endDate: Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date(),
-                description: "Марс образует квадрат к вашему Меркурию",
-                influence: "Возможны конфликты в общении, будьте осторожны с словами",
-                influenceLevel: 3
+                aspectType: .square,
+                orb: 1.8,
+                influence: .challenging,
+                duration: DateInterval(start: Date(), end: Calendar.current.date(byAdding: .day, value: 7, to: Date()) ?? Date()),
+                peak: Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date(),
+                interpretation: "Марс образует квадрат к вашему Меркурию",
+                humanDescription: "Возможны конфликты в общении, будьте осторожны с словами",
+                emoji: "⚡"
             )
         ]
     }
@@ -266,16 +268,16 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
         let aspects: [Aspect] = [
             Aspect(
                 id: UUID().uuidString,
-                planet1: .sun,
-                planet2: .moon,
+                planet1Type: .sun,
+                planet2Type: .moon,
                 type: .trine,
                 orb: 3.2,
                 isApplying: true
             ),
             Aspect(
                 id: UUID().uuidString,
-                planet1: .venus,
-                planet2: .mars,
+                planet1Type: .venus,
+                planet2Type: .mars,
                 type: .conjunction,
                 orb: 1.8,
                 isApplying: false
@@ -853,6 +855,38 @@ class EnhancedMockAstrologyService: AstrologyServiceProtocol {
                 "Сострадание делает мир добрее, но не забывайте о границах."
             ]
         }
+    }
+
+    // MARK: - Additional Protocol Methods
+
+
+    func getCurrentTransits() async throws -> [DailyTransit] {
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        return [
+            DailyTransit(
+                planet: .venus,
+                sign: .taurus,
+                aspectType: .trine,
+                natalPlanet: .sun,
+                startDate: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(),
+                endDate: Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date(),
+                description: "Венера в Тельце образует гармоничный трин к натальному Солнцу",
+                influence: "Благоприятное время для любви, творчества и финансовых дел",
+                influenceLevel: 4
+            ),
+            DailyTransit(
+                planet: .mars,
+                sign: .leo,
+                aspectType: .square,
+                natalPlanet: .moon,
+                startDate: Date(),
+                endDate: Calendar.current.date(byAdding: .day, value: 5, to: Date()) ?? Date(),
+                description: "Марс во Льве создает напряженный квадрат к натальной Луне",
+                influence: "Возможны эмоциональные вспышки и конфликты, требуется осторожность",
+                influenceLevel: 3
+            )
+        ]
     }
 
     // Простейший генератор псевдослучайных чисел с семенем

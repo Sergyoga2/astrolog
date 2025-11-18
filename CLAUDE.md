@@ -2,9 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Communication Style
+
+**IMPORTANT**: When completing tasks, always end with simply "задачи выполнены" (tasks completed). Do NOT write summaries, conclusions, or detailed explanations of what was done. This saves tokens and keeps communication concise.
+
 ## Project Overview
 
-**AstroWise** is an iOS astrology application built with Swift and SwiftUI, targeting iOS 16.0+. The app provides birth chart calculations, daily forecasts, social compatibility features, meditation library, and subscription-based monetization.
+**Astrolog** is an iOS astrology application built with Swift and SwiftUI, targeting iOS 16.0+. The app provides birth chart calculations, daily forecasts, social compatibility features, meditation library, and subscription-based monetization.
 
 ## Architecture
 

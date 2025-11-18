@@ -24,11 +24,28 @@ extension Color {
     static let neonBlue = Color(hex: "448aff")
     static let neonCyan = Color(hex: "18ffff")
     static let neonGreen = Color(hex: "00ff88")
+
+    // Цвета для разных режимов пользователя
+    static let beginnerGreen = Color(hex: "10B981")
+    static let infoBlue = Color(hex: "3B82F6")
+    static let warningAmber = Color(hex: "F59E0B")
+
+    // Семантические цвета для интерпретаций
+    static let positive = Color(hex: "34D399")
+    static let challenging = Color(hex: "F87171")
+    static let neutral = Color(hex: "9CA3AF")
+
+    // Цвета для стихий (элементарное кодирование)
+    static let fireElement = Color(hex: "FF6B6B")    // Огонь - яркий красный
+    static let earthElement = Color(hex: "4ECDC4")   // Земля - зеленоватый бирюзовый
+    static let airElement = Color(hex: "FFE66D")     // Воздух - светло-желтый
+    static let waterElement = Color(hex: "95B8F6")   // Вода - нежно-голубой
     
     // Звездные оттенки
     static let starWhite = Color(hex: "fafafa")
     static let starYellow = Color(hex: "ffd54f")
     static let starOrange = Color(hex: "ffb74d")
+    static let starGreen = Color(hex: "81c784")
     
     // Фоновые цвета
     static let spaceBlack = Color(hex: "000000")
@@ -134,6 +151,7 @@ struct CosmicTypography {
 
 // MARK: - Spacing & Sizing
 struct CosmicSpacing {
+    static let extraSmall: CGFloat = 2
     static let tiny: CGFloat = 4
     static let small: CGFloat = 8
     static let medium: CGFloat = 16

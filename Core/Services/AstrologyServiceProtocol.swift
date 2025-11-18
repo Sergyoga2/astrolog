@@ -11,7 +11,7 @@ protocol AstrologyServiceProtocol {
     func calculateBirthChart(from birthData: BirthData) async throws -> BirthChart
     func generateDailyHoroscope(for sunSign: ZodiacSign, date: Date) async throws -> DailyHoroscope
     func calculateCompatibility(chart1: BirthChart, chart2: BirthChart) async throws -> CompatibilityResult
-    func getCurrentTransits() async throws -> [Transit]
+    func getCurrentTransits() async throws -> [DailyTransit]
 }
 
 // Новые модели для гороскопов
@@ -51,7 +51,7 @@ struct CompatibilityCategories: Codable {
     let spiritual: Double
 }
 
-struct Transit: Codable, Identifiable {
+struct DailyTransit: Codable, Identifiable {
     let id = UUID().uuidString
     let planet: PlanetType
     let sign: ZodiacSign  // Знак, в которой находится планета

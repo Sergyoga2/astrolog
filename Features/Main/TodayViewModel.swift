@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 
-@MainActor
 class TodayViewModel: ObservableObject {
     @Published var dailyHoroscope: DailyHoroscope?
     @Published var transits: [Transit] = []
@@ -52,12 +51,13 @@ class TodayViewModel: ObservableObject {
         isLoadingTransits = true
 
         do {
-            let transits = try await astrologyService.getCurrentTransits()
-            self.transits = transits
+            let dailyTransits = try await astrologyService.getCurrentTransits()
+            // Конвертируем DailyTransit в Transit
+            self.transits = convertDailyTransitsToTransits(dailyTransits)
             self.isLoadingTransits = false
 
             // Для отладки - выводим количество транзитов
-            print("✅ Loaded \(transits.count) transits")
+            print("✅ Loaded \(self.transits.count) transits")
 
         } catch {
             self.errorMessage = "Не удалось загрузить транзиты: \(error.localizedDescription)"
@@ -69,40 +69,69 @@ class TodayViewModel: ObservableObject {
         }
     }
 
+    private func convertDailyTransitsToTransits(_ dailyTransits: [DailyTransit]) -> [Transit] {
+        return dailyTransits.compactMap { dailyTransit in
+            guard let natalPlanet = dailyTransit.natalPlanet,
+                  let aspectType = dailyTransit.aspectType else {
+                return nil
+            }
+
+            return Transit(
+                transitingPlanet: dailyTransit.planet,
+                natalPlanet: natalPlanet,
+                aspectType: aspectType,
+                orb: 2.0, // Стандартный орб
+                influence: .harmonious, // Упрощенная логика
+                duration: DateInterval(start: dailyTransit.startDate, end: dailyTransit.endDate),
+                peak: Date(),
+                interpretation: dailyTransit.description,
+                humanDescription: dailyTransit.influence,
+                emoji: "✨"
+            )
+        }
+    }
+
     private func createFallbackTransits() -> [Transit] {
+        let endDate1 = Calendar.current.date(byAdding: .day, value: 10, to: Date()) ?? Date()
+        let endDate2 = Calendar.current.date(byAdding: .day, value: 5, to: Date()) ?? Date()
+        let endDate3 = Calendar.current.date(byAdding: .day, value: 20, to: Date()) ?? Date()
+
         return [
             Transit(
-                planet: .venus,
-                sign: .taurus,
-                aspectType: .trine,
+                transitingPlanet: .venus,
                 natalPlanet: .sun,
-                startDate: Date(),
-                endDate: Calendar.current.date(byAdding: .day, value: 10, to: Date()) ?? Date(),
-                description: "Венера в Тельце образует благоприятный аспект",
-                influence: "Гармония в отношениях и финансах",
-                influenceLevel: 4
+                aspectType: .trine,
+                orb: 2.0,
+                influence: .harmonious,
+                duration: DateInterval(start: Date(), end: endDate1),
+                peak: Date(),
+                interpretation: "Венера в Тельце образует благоприятный аспект",
+                humanDescription: "Гармония в отношениях и финансах",
+                emoji: "♀️✨"
             ),
             Transit(
-                planet: .mars,
-                sign: .aries,
-                aspectType: .square,
+                transitingPlanet: .mars,
                 natalPlanet: .mercury,
-                startDate: Date(),
-                endDate: Calendar.current.date(byAdding: .day, value: 5, to: Date()) ?? Date(),
-                description: "Марс в Овне создает напряжение с Меркурием",
-                influence: "Будьте осторожны с импульсивными решениями",
-                influenceLevel: 3
+                aspectType: .square,
+                orb: 3.0,
+                influence: .challenging,
+                duration: DateInterval(start: Date(), end: endDate2),
+                peak: Date(),
+                interpretation: "Марс в Овне создает напряжение с Меркурием",
+                humanDescription: "Будьте осторожны с импульсивными решениями",
+                emoji: "♂️⚡️"
             ),
             Transit(
-                planet: .jupiter,
-                sign: .sagittarius,
-                aspectType: .sextile,
+                transitingPlanet: .jupiter,
                 natalPlanet: .venus,
-                startDate: Date(),
-                endDate: Calendar.current.date(byAdding: .day, value: 20, to: Date()) ?? Date(),
-                description: "Юпитер в Стрельце поддерживает Венеру",
-                influence: "Расширение возможностей в любви и творчестве",
-                influenceLevel: 5
+                aspectType: .sextile,
+                orb: 1.5,
+                influence: .harmonious,
+                duration: DateInterval(start: Date(), end: endDate3),
+                peak: Date(),
+                interpretation: "Юпитер в Стрельце поддерживает Венеру",
+                humanDescription: "Расширение возможностей в любви и творчестве",
+                emoji: "♃✨"
             )
         ]
     }

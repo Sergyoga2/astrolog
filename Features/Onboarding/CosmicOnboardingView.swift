@@ -15,19 +15,19 @@ struct CosmicOnboardingView: View {
     @State private var animationProgress: Double = 0
 
     let onboardingSteps = [
-        OnboardingStep(
+        CosmicOnboardingStep(
             title: "Добро пожаловать во Вселенную",
             subtitle: "Откройте тайны звезд и познайте себя через космическую мудрость астрологии",
             icon: "star.circle.fill",
             color: .neonPurple
         ),
-        OnboardingStep(
+        CosmicOnboardingStep(
             title: "Ваша Натальная Карта",
             subtitle: "Создайте персональную карту неба на момент вашего рождения и раскройте свой потенциал",
             icon: "globe.americas.fill",
             color: .neonBlue
         ),
-        OnboardingStep(
+        CosmicOnboardingStep(
             title: "Космические Практики",
             subtitle: "Медитации, аффирмации и астрологические практики для развития и гармонии",
             icon: "leaf.circle.fill",
@@ -110,7 +110,7 @@ struct CosmicOnboardingView: View {
 }
 
 // MARK: - Onboarding Step Model
-struct OnboardingStep {
+struct CosmicOnboardingStep {
     let title: String
     let subtitle: String
     let icon: String
@@ -119,7 +119,7 @@ struct OnboardingStep {
 
 // MARK: - Step View
 struct CosmicOnboardingStepView: View {
-    let step: OnboardingStep
+    let step: CosmicOnboardingStep
     let geometry: GeometryProxy
     let isLast: Bool
     let onNext: () -> Void

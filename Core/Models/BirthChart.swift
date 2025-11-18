@@ -61,22 +61,37 @@ struct House: Codable, Identifiable {
     let cuspLongitude: Double
     let zodiacSign: ZodiacSign
     let planetsInHouse: [PlanetType]
+
+    // Computed property для совместимости
+    var planets: [Planet] {
+        // Заглушка - в реальности нужно будет получать планеты из общего списка
+        return []
+    }
 }
 
 struct Aspect: Codable, Identifiable {
     let id: String
-    let planet1: PlanetType
-    let planet2: PlanetType
+    let planet1Type: PlanetType
+    let planet2Type: PlanetType
     let type: AspectType
     let orb: Double // отклонение от точного аспекта
     let isApplying: Bool // сходящийся или расходящийся
+
+    // Computed properties для совместимости
+    var planet1: Planet {
+        Planet.mockPlanets.first { $0.type == planet1Type } ?? Planet.mockPlanets[0]
+    }
+
+    var planet2: Planet {
+        Planet.mockPlanets.first { $0.type == planet2Type } ?? Planet.mockPlanets[1]
+    }
 }
 
-enum PlanetType: String, CaseIterable, Codable {
+public enum PlanetType: String, CaseIterable, Codable {
     case sun, moon, mercury, venus, mars, jupiter, saturn, uranus, neptune, pluto
     case ascendant, midheaven, northNode
-    
-    var symbol: String {
+
+    public var symbol: String {
         switch self {
         case .sun: return "☉"
         case .moon: return "☽"
@@ -93,8 +108,8 @@ enum PlanetType: String, CaseIterable, Codable {
         case .northNode: return "☊"
         }
     }
-    
-    var displayName: String {
+
+    public var displayName: String {
         switch self {
         case .sun: return "Солнце"
         case .moon: return "Луна"
@@ -166,6 +181,14 @@ enum ZodiacSign: Int, CaseIterable, Codable {
         }
     }
 
+    var modality: Modality {
+        switch self {
+        case .aries, .cancer, .libra, .capricorn: return .cardinal
+        case .taurus, .leo, .scorpio, .aquarius: return .fixed
+        case .gemini, .virgo, .sagittarius, .pisces: return .mutable
+        }
+    }
+
     var color: Color {
         switch self {
         case .aries: return .starOrange
@@ -180,6 +203,16 @@ enum ZodiacSign: Int, CaseIterable, Codable {
         case .capricorn: return .deepSpace
         case .aquarius: return .neonBlue
         case .pisces: return .cosmicViolet
+        }
+    }
+
+    /// Цвет стихии знака зодиака (элементарное кодирование)
+    var elementColor: Color {
+        switch element {
+        case .fire: return .fireElement
+        case .earth: return .earthElement
+        case .air: return .airElement
+        case .water: return .waterElement
         }
     }
 
@@ -198,16 +231,37 @@ enum ZodiacSign: Int, CaseIterable, Codable {
             }
         }
     }
+
+    enum Modality: String, CaseIterable {
+        case cardinal = "cardinal"
+        case fixed = "fixed"
+        case mutable = "mutable"
+
+        var displayName: String {
+            switch self {
+            case .cardinal: return "Кардинальный"
+            case .fixed: return "Фиксированный"
+            case .mutable: return "Изменчивый"
+            }
+        }
+    }
+
+    /// Получить знак зодиака по долготе (0-360 градусов)
+    static func from(longitude: Double) -> ZodiacSign {
+        let normalizedLongitude = longitude.truncatingRemainder(dividingBy: 360)
+        let signIndex = Int(normalizedLongitude / 30) % 12
+        return ZodiacSign(rawValue: signIndex) ?? .aries
+    }
 }
 
-enum AspectType: String, CaseIterable, Codable {
+public enum AspectType: String, CaseIterable, Codable {
     case conjunction = "conjunction" // 0°
     case sextile = "sextile"         // 60°
     case square = "square"           // 90°
     case trine = "trine"             // 120°
     case opposition = "opposition"   // 180°
-    
-    var degrees: Double {
+
+    public var degrees: Double {
         switch self {
         case .conjunction: return 0
         case .sextile: return 60
@@ -216,8 +270,8 @@ enum AspectType: String, CaseIterable, Codable {
         case .opposition: return 180
         }
     }
-    
-    var symbol: String {
+
+    public var symbol: String {
         switch self {
         case .conjunction: return "☌"
         case .sextile: return "⚹"
@@ -226,11 +280,98 @@ enum AspectType: String, CaseIterable, Codable {
         case .opposition: return "☍"
         }
     }
-    
-    var isHarmonic: Bool {
+
+    public var displayName: String {
+        switch self {
+        case .conjunction: return "Соединение"
+        case .sextile: return "Секстиль"
+        case .square: return "Квадратура"
+        case .trine: return "Тригон"
+        case .opposition: return "Оппозиция"
+        }
+    }
+
+    public var isHarmonic: Bool {
         switch self {
         case .sextile, .trine: return true
         case .conjunction, .square, .opposition: return false
         }
     }
+
+    /// Цвет аспекта на основе его природы
+    public var color: Color {
+        switch self {
+        case .sextile, .trine:
+            return .positive // Гармоничные аспекты - зеленый
+        case .square, .opposition:
+            return .challenging // Напряженные аспекты - красный
+        case .conjunction:
+            return .neutral // Соединение - нейтральный серый
+        }
+    }
+
+    /// Интенсивность влияния аспекта
+    public var intensity: Double {
+        switch self {
+        case .conjunction: return 1.0
+        case .opposition: return 0.9
+        case .square: return 0.8
+        case .trine: return 0.7
+        case .sextile: return 0.6
+        }
+    }
+}
+
+// MARK: - Mock Data
+extension BirthChart {
+    static let mock = BirthChart(
+        id: "mock-chart-id",
+        userId: "mock-user-id",
+        name: "Пример карты",
+        birthDate: Date(),
+        birthTime: "12:00",
+        location: "Москва, Россия",
+        latitude: 55.7558,
+        longitude: 37.6176,
+        planets: Planet.mockPlanets,
+        houses: House.mockHouses,
+        aspects: Aspect.mockAspects,
+        calculatedAt: Date()
+    )
+}
+
+extension Planet {
+    static let mockPlanets: [Planet] = [
+        Planet(id: "sun", type: .sun, longitude: 120, zodiacSign: .leo, house: 10, isRetrograde: false),
+        Planet(id: "moon", type: .moon, longitude: 90, zodiacSign: .cancer, house: 9, isRetrograde: false),
+        Planet(id: "ascendant", type: .ascendant, longitude: 0, zodiacSign: .aries, house: 1, isRetrograde: false),
+        Planet(id: "mercury", type: .mercury, longitude: 110, zodiacSign: .leo, house: 10, isRetrograde: false),
+        Planet(id: "venus", type: .venus, longitude: 130, zodiacSign: .virgo, house: 11, isRetrograde: false),
+        Planet(id: "mars", type: .mars, longitude: 150, zodiacSign: .libra, house: 12, isRetrograde: false)
+    ]
+}
+
+extension House {
+    static let mockHouses: [House] = [
+        House(id: "house1", number: 1, cuspLongitude: 0, zodiacSign: .aries, planetsInHouse: []),
+        House(id: "house2", number: 2, cuspLongitude: 30, zodiacSign: .taurus, planetsInHouse: []),
+        House(id: "house3", number: 3, cuspLongitude: 60, zodiacSign: .gemini, planetsInHouse: []),
+        House(id: "house4", number: 4, cuspLongitude: 90, zodiacSign: .cancer, planetsInHouse: []),
+        House(id: "house5", number: 5, cuspLongitude: 120, zodiacSign: .leo, planetsInHouse: []),
+        House(id: "house6", number: 6, cuspLongitude: 150, zodiacSign: .virgo, planetsInHouse: []),
+        House(id: "house7", number: 7, cuspLongitude: 180, zodiacSign: .libra, planetsInHouse: []),
+        House(id: "house8", number: 8, cuspLongitude: 210, zodiacSign: .scorpio, planetsInHouse: []),
+        House(id: "house9", number: 9, cuspLongitude: 240, zodiacSign: .sagittarius, planetsInHouse: []),
+        House(id: "house10", number: 10, cuspLongitude: 270, zodiacSign: .capricorn, planetsInHouse: []),
+        House(id: "house11", number: 11, cuspLongitude: 300, zodiacSign: .aquarius, planetsInHouse: []),
+        House(id: "house12", number: 12, cuspLongitude: 330, zodiacSign: .pisces, planetsInHouse: [])
+    ]
+}
+
+extension Aspect {
+    static let mockAspects: [Aspect] = [
+        Aspect(id: "aspect1", planet1Type: .sun, planet2Type: .moon, type: .trine, orb: 3.5, isApplying: true),
+        Aspect(id: "aspect2", planet1Type: .sun, planet2Type: .ascendant, type: .square, orb: 2.1, isApplying: false),
+        Aspect(id: "aspect3", planet1Type: .moon, planet2Type: .venus, type: .sextile, orb: 1.8, isApplying: true)
+    ]
 }

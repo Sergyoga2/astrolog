@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 
-@MainActor
 class ChartViewModel: ObservableObject {
     @Published var birthChart: BirthChart?
     @Published var isLoading = false
