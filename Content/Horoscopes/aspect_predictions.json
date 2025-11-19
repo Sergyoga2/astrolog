@@ -1,0 +1,333 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "language": "ru",
+    "lastUpdated": "2025-11-19",
+    "description": "Расширенные предсказания на основе аспектов дня"
+  },
+  "daily_aspects": [
+    {
+      "aspect": "Trine",
+      "planets": [
+        "Sun",
+        "Jupiter"
+      ],
+      "title": "Солнце трин Юпитер",
+      "message": "День удачи и расширения возможностей. Ваши усилия принесут плоды.",
+      "advice": "Проявите инициативу в важных делах. Удача на вашей стороне.",
+      "impact": "very_positive",
+      "areas": [
+        "career",
+        "opportunities",
+        "growth"
+      ],
+      "timing": "excellent",
+      "duration": "1 день"
+    },
+    {
+      "aspect": "Square",
+      "planets": [
+        "Sun",
+        "Saturn"
+      ],
+      "title": "Солнце квадрат Сатурн",
+      "message": "Возможны ограничения и препятствия. Требуется терпение и дисциплина.",
+      "advice": "Не форсируйте события. Работайте методично.",
+      "impact": "challenging",
+      "areas": [
+        "authority",
+        "responsibility",
+        "delays"
+      ],
+      "timing": "difficult",
+      "duration": "1-2 дня"
+    },
+    {
+      "aspect": "Sextile",
+      "planets": [
+        "Sun",
+        "Mars"
+      ],
+      "title": "Солнце секстиль Марс",
+      "message": "Прилив энергии и мотивации. Отличный день для активных действий.",
+      "advice": "Используйте энергию для продвижения своих целей.",
+      "impact": "positive",
+      "areas": [
+        "action",
+        "energy",
+        "initiative"
+      ],
+      "timing": "favorable",
+      "duration": "1 день"
+    },
+    {
+      "aspect": "Opposition",
+      "planets": [
+        "Sun",
+        "Moon"
+      ],
+      "title": "Полнолуние",
+      "message": "Кульминация событий. Эмоции на пике. Время завершения и осознания.",
+      "advice": "Ищите баланс. Завершайте начатое.",
+      "impact": "intense",
+      "areas": [
+        "emotions",
+        "culmination",
+        "relationships"
+      ],
+      "timing": "powerful",
+      "duration": "3 дня"
+    },
+    {
+      "aspect": "Conjunction",
+      "planets": [
+        "Sun",
+        "Moon"
+      ],
+      "title": "Новолуние",
+      "message": "Новые начинания. Время сажать семена будущего.",
+      "advice": "Ставьте намерения. Начинайте новые проекты.",
+      "impact": "neutral_powerful",
+      "areas": [
+        "new_beginnings",
+        "intentions",
+        "fresh_start"
+      ],
+      "timing": "initiating",
+      "duration": "3 дня"
+    },
+    {
+      "aspect": "Trine",
+      "planets": [
+        "Moon",
+        "Venus"
+      ],
+      "title": "Луна трин Венера",
+      "message": "Гармония в эмоциях и отношениях. Прекрасный день для любви.",
+      "advice": "Проводите время с любимыми. Наслаждайтесь красотой.",
+      "impact": "harmonious",
+      "areas": [
+        "love",
+        "beauty",
+        "comfort"
+      ],
+      "timing": "pleasant",
+      "duration": "несколько часов"
+    },
+    {
+      "aspect": "Trine",
+      "planets": [
+        "Mercury",
+        "Jupiter"
+      ],
+      "title": "Меркурий трин Юпитер",
+      "message": "Расширение знаний. Отличный день для обучения и общения.",
+      "advice": "Учитесь, читайте, обменивайтесь идеями.",
+      "impact": "positive",
+      "areas": [
+        "learning",
+        "communication",
+        "wisdom"
+      ],
+      "timing": "favorable",
+      "duration": "2-3 дня"
+    },
+    {
+      "aspect": "Square",
+      "planets": [
+        "Mercury",
+        "Mars"
+      ],
+      "title": "Меркурий квадрат Марс",
+      "message": "Возможны споры и резкие слова. Будьте осторожны в общении.",
+      "advice": "Думайте, прежде чем говорить. Избегайте конфликтов.",
+      "impact": "challenging",
+      "areas": [
+        "arguments",
+        "hasty_words",
+        "conflicts"
+      ],
+      "timing": "tense",
+      "duration": "1-2 дня"
+    },
+    {
+      "aspect": "Retrograde",
+      "planets": [
+        "Mercury"
+      ],
+      "title": "Меркурий ретроградный",
+      "message": "Период пересмотра планов и коммуникации. Возможны задержки.",
+      "advice": "Перепроверяйте информацию. Избегайте важных подписаний.",
+      "impact": "cautionary",
+      "areas": [
+        "communication",
+        "technology",
+        "travel"
+      ],
+      "timing": "review_period",
+      "duration": "3 недели"
+    },
+    {
+      "aspect": "Trine",
+      "planets": [
+        "Venus",
+        "Mars"
+      ],
+      "title": "Венера трин Марс",
+      "message": "Страсть и романтика. Идеальное время для любви.",
+      "advice": "Выразите свои чувства. Проявите инициативу в отношениях.",
+      "impact": "very_positive",
+      "areas": [
+        "romance",
+        "passion",
+        "attraction"
+      ],
+      "timing": "excellent",
+      "duration": "3-4 дня"
+    },
+    {
+      "aspect": "Square",
+      "planets": [
+        "Venus",
+        "Saturn"
+      ],
+      "title": "Венера квадрат Сатурн",
+      "message": "Ограничения в любви или финансах. Требуется терпение.",
+      "advice": "Будьте реалистичны в ожиданиях. Работайте над долгосрочным.",
+      "impact": "challenging",
+      "areas": [
+        "love_delays",
+        "financial_caution",
+        "commitment"
+      ],
+      "timing": "restrictive",
+      "duration": "3-4 дня"
+    },
+    {
+      "aspect": "Sextile",
+      "planets": [
+        "Venus",
+        "Neptune"
+      ],
+      "title": "Венера секстиль Нептун",
+      "message": "Романтические мечты и вдохновение. Креативность на подъеме.",
+      "advice": "Позвольте себе мечтать. Занимайтесь творчеством.",
+      "impact": "dreamy",
+      "areas": [
+        "romance",
+        "creativity",
+        "idealism"
+      ],
+      "timing": "inspiring",
+      "duration": "2-3 дня"
+    },
+    {
+      "aspect": "Trine",
+      "planets": [
+        "Mars",
+        "Jupiter"
+      ],
+      "title": "Марс трин Юпитер",
+      "message": "Высокая энергия и энтузиазм. Смелые действия приносят успех.",
+      "advice": "Действуйте уверенно. Ставьте амбициозные цели.",
+      "impact": "very_positive",
+      "areas": [
+        "action",
+        "success",
+        "confidence"
+      ],
+      "timing": "powerful",
+      "duration": "1 неделя"
+    },
+    {
+      "aspect": "Square",
+      "planets": [
+        "Mars",
+        "Pluto"
+      ],
+      "title": "Марс квадрат Плутон",
+      "message": "Интенсивная энергия. Возможна борьба за власть.",
+      "advice": "Избегайте конфронтации. Направьте энергию конструктивно.",
+      "impact": "very_challenging",
+      "areas": [
+        "power_struggles",
+        "intensity",
+        "transformation"
+      ],
+      "timing": "volatile",
+      "duration": "1 неделя"
+    },
+    {
+      "aspect": "Opposition",
+      "planets": [
+        "Mars",
+        "Saturn"
+      ],
+      "title": "Марс оппозиция Сатурн",
+      "message": "Фрустрация и препятствия. Энергия встречает сопротивление.",
+      "advice": "Проявите терпение. Используйте стратегический подход.",
+      "impact": "frustrating",
+      "areas": [
+        "obstacles",
+        "delays",
+        "patience_required"
+      ],
+      "timing": "difficult",
+      "duration": "1 неделя"
+    },
+    {
+      "aspect": "Trine",
+      "planets": [
+        "Jupiter",
+        "Neptune"
+      ],
+      "title": "Юпитер трин Нептун",
+      "message": "Духовный рост и вдохновение. Время для мечтаний и веры.",
+      "advice": "Медитируйте, мечтайте, верьте в лучшее.",
+      "impact": "spiritual",
+      "areas": [
+        "spirituality",
+        "faith",
+        "compassion"
+      ],
+      "timing": "inspiring",
+      "duration": "несколько месяцев"
+    },
+    {
+      "aspect": "Square",
+      "planets": [
+        "Saturn",
+        "Uranus"
+      ],
+      "title": "Сатурн квадрат Уран",
+      "message": "Напряжение между старым и новым. Время перемен.",
+      "advice": "Ищите баланс между стабильностью и изменениями.",
+      "impact": "transformative",
+      "areas": [
+        "change",
+        "revolution",
+        "structure"
+      ],
+      "timing": "tense",
+      "duration": "несколько месяцев"
+    },
+    {
+      "aspect": "Sextile",
+      "planets": [
+        "Saturn",
+        "Neptune"
+      ],
+      "title": "Сатурн секстиль Нептун",
+      "message": "Практическая духовность. Мечты обретают форму.",
+      "advice": "Структурируйте свои мечты. Создавайте реальность.",
+      "impact": "grounding",
+      "areas": [
+        "practical_spirituality",
+        "manifestation",
+        "discipline"
+      ],
+      "timing": "productive",
+      "duration": "несколько месяцев"
+    }
+  ]
+}
