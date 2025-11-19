@@ -11,13 +11,7 @@ struct AppSettingsView: View {
     @State private var animationsEnabled = true
     @State private var hapticFeedback = true
     @State private var autoBackup = true
-    @State private var selectedLanguage = "ru"
-
-    let languages = [
-        ("ru", "Русский"),
-        ("en", "English"),
-        ("es", "Español")
-    ]
+    @ObservedObject private var localizationManager = LocalizationManager.shared
 
     var body: some View {
         ZStack {
@@ -65,42 +59,7 @@ struct AppSettingsView: View {
                     }
 
                     // Язык
-                    CosmicCard(glowColor: .cosmicViolet) {
-                        VStack(alignment: .leading, spacing: CosmicSpacing.medium) {
-                            HStack {
-                                Image(systemName: "globe")
-                                    .foregroundColor(.cosmicViolet)
-                                    .frame(width: 24)
-
-                                Text("Язык интерфейса")
-                                    .font(CosmicTypography.body)
-                                    .foregroundColor(.starWhite)
-                            }
-
-                            ForEach(languages, id: \.0) { code, name in
-                                HStack {
-                                    Text(name)
-                                        .font(CosmicTypography.body)
-                                        .foregroundColor(.starWhite)
-
-                                    Spacer()
-
-                                    if selectedLanguage == code {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.cosmicViolet)
-                                            .modifier(NeonGlow(color: .cosmicViolet, intensity: 0.8))
-                                    }
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    withAnimation(.spring()) {
-                                        selectedLanguage = code
-                                    }
-                                    CosmicFeedbackManager.shared.selection()
-                                }
-                            }
-                        }
-                    }
+                    LanguagePickerView()
 
                     // О приложении
                     CosmicCard(glowColor: .neonPurple) {
