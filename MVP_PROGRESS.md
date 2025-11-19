@@ -382,6 +382,7 @@ firestore.rules.secure                         ✅ NEW (Сессия 6)
 storage.rules                                  ✅ UPDATED (Сессия 8 - hardened)
 storage.rules.secure                           ✅ NEW (Сессия 6)
 SECURITY_IMPROVEMENTS.md                       ✅ NEW (Сессия 8)
+DEVELOPMENT_SUMMARY.md                         ✅ NEW (Сессия 9)
 MVP_PROGRESS.md                                ✅ UPDATED
 
 Scripts/
