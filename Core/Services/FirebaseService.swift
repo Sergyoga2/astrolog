@@ -231,6 +231,135 @@ extension FirebaseService {
     }
 }
 
+// MARK: - Friends Management
+extension FirebaseService {
+    /// Send a friend request
+    func sendFriendRequest(_ requestData: [String: Any]) async throws {
+        guard currentUser != nil else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        guard let requestId = requestData["id"] as? String else {
+            throw FirebaseError.invalidData
+        }
+
+        try await db.collection("friendRequests")
+            .document(requestId)
+            .setData(requestData)
+    }
+
+    /// Update friend request status
+    func updateFriendRequest(requestId: String, data: [String: Any]) async throws {
+        guard currentUser != nil else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        try await db.collection("friendRequests")
+            .document(requestId)
+            .updateData(data)
+    }
+
+    /// Load friend requests for a user
+    func loadFriendRequests(userId: String) async throws -> [[String: Any]] {
+        guard currentUser != nil else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        let snapshot = try await db.collection("friendRequests")
+            .whereField("toUserId", isEqualTo: userId)
+            .whereField("status", isEqualTo: "pending")
+            .getDocuments()
+
+        return snapshot.documents.map { $0.data() }
+    }
+
+    /// Save friend relationship
+    func saveFriend(_ friendData: [String: Any]) async throws {
+        guard currentUser != nil else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        guard let friendId = friendData["id"] as? String,
+              let userId = friendData["userId"] as? String else {
+            throw FirebaseError.invalidData
+        }
+
+        try await db.collection("users")
+            .document(userId)
+            .collection("friends")
+            .document(friendId)
+            .setData(friendData, merge: true)
+    }
+
+    /// Load friends for a user
+    func loadFriends(userId: String) async throws -> [[String: Any]] {
+        guard currentUser != nil else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        let snapshot = try await db.collection("users")
+            .document(userId)
+            .collection("friends")
+            .whereField("status", isEqualTo: "accepted")
+            .getDocuments()
+
+        return snapshot.documents.map { $0.data() }
+    }
+
+    /// Update friend data
+    func updateFriend(friendId: String, data: [String: Any]) async throws {
+        guard let uid = currentUser?.uid else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        try await db.collection("users")
+            .document(uid)
+            .collection("friends")
+            .document(friendId)
+            .updateData(data)
+    }
+
+    /// Remove friend
+    func removeFriend(friendId: String, userId: String) async throws {
+        guard currentUser != nil else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        try await db.collection("users")
+            .document(userId)
+            .collection("friends")
+            .document(friendId)
+            .delete()
+    }
+
+    /// Search user by email
+    func searchUserByEmail(_ email: String) async throws -> [String: Any]? {
+        guard currentUser != nil else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        let snapshot = try await db.collection("users")
+            .whereField("email", isEqualTo: email)
+            .limit(to: 1)
+            .getDocuments()
+
+        return snapshot.documents.first?.data()
+    }
+
+    /// Load birth chart for specific user (for compatibility)
+    func loadBirthChart(userId: String) async throws -> [String: Any]? {
+        guard currentUser != nil else {
+            throw FirebaseError.notAuthenticated
+        }
+
+        let document = try await db.collection("birthCharts")
+            .document(userId)
+            .getDocument()
+
+        return document.data()?["chartData"] as? [String: Any]
+    }
+}
+
 // MARK: - Error Types
 enum FirebaseError: Error, LocalizedError {
     case notAuthenticated
