@@ -358,6 +358,14 @@ AstrologUITests/
 ├── AuthUITests.swift                     ✅ NEW
 └── BirthChartUITests.swift               ✅ NEW
 
+Content/
+├── Interpretations/
+│   ├── planets_in_signs.json             ✅ NEW (Сессия 8)
+│   ├── planets_in_houses.json            ✅ NEW (Сессия 8)
+│   └── aspects.json                      ✅ NEW (Сессия 8)
+└── UI/
+    └── faq.json                          ✅ EXISTING
+
 PrivacyInfo.xcprivacy                          ✅ NEW
 Astrolog-Bridging-Header.h                     ✅ NEW
 SWISS_EPHEMERIS_INTEGRATION.md                 ✅ NEW
@@ -580,7 +588,15 @@ Scripts/
 - Deep linking: ✅
 - Settings UI: ✅
 
-**Общая готовность MVP:** ~99%
+✅ **Контент интерпретаций:** Готово (100%)
+- Planets in Signs (120 текстов): ✅
+- Planets in Houses (120 текстов): ✅
+- Aspects (100 текстов): ✅
+- JSON validation: ✅
+- Русский язык: ✅
+- Структурированные данные: ✅
+
+**Общая готовность MVP:** ~100%
 
 **⚠️ Критические задачи перед production:**
 1. Применить hardened Firebase rules (firestore.rules.secure → firestore.rules)
@@ -638,3 +654,53 @@ Scripts/
 **Documentation:** ~1,910 строк
 **Локализаций:** 300+ ключей (2 языка)
 **Коммитов:** 6
+
+### Сессия 8 (Content - Astrological Interpretations)
+- **Новых файлов:** 3 (interpretation JSON files)
+- **Строк контента:** ~6,000 JSON строк
+- **Коммитов:** 3
+
+**Реализовано:**
+
+#### Astrological Content (CONTENT-001 to CONTENT-003)
+- `Content/Interpretations/planets_in_signs.json` - 120 интерпретаций планет в знаках
+- `Content/Interpretations/planets_in_houses.json` - 120 интерпретаций планет в домах
+- `Content/Interpretations/aspects.json` - 100 интерпретаций аспектов
+
+**Planets in Signs (120 texts):**
+- Все 10 планет (Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto)
+- Во всех 12 знаках зодиака
+- Для каждой комбинации: title, description, keywords, zodiacSign, dignity, traits, challenges
+
+**Planets in Houses (120 texts):**
+- Все 10 планет в каждом из 12 домов
+- Для каждой комбинации: title, description, keywords, lifeArea, traits, challenges
+
+**Aspects (100 texts):**
+- Все основные аспекты: Conjunction (0°), Opposition (180°), Square (90°), Trine (120°), Sextile (60°)
+- Все значимые планетные пары (Sun-Moon, Sun-Mars, Venus-Pluto и т.д.)
+- Для каждого аспекта: title, description, keywords, angle, orb, nature (harmonious/challenging/neutral), traits, challenges
+
+**Характеристики контента:**
+- Язык: Русский
+- Формат: JSON
+- Стиль: профессиональный астрологический язык
+- Структура: единообразная для всех типов интерпретаций
+- Валидация: все файлы валидны JSON
+
+**Использование:**
+Эти интерпретации используются в приложении для:
+- Показа детальных описаний планет в натальной карте
+- Объяснения аспектов между планетами
+- Персонализированных прогнозов
+- Обучения пользователей астрологии
+
+### ИТОГО за все сессии (обновлено)
+- **Всего файлов:** 64 (59 новых, 7 обновленных)
+- **Всего строк:** ~21,000
+- **Коммитов:** 12
+- **Production code:** ~7,610 строк
+- **Tests:** ~6,240 строк (170 тестов)
+- **Documentation:** ~2,900 строк
+- **Content:** ~6,000 строк JSON (340 интерпретаций)
+- **Локализаций:** 2 языка (English, Русский)
