@@ -363,6 +363,11 @@ Content/
 │   ├── planets_in_signs.json             ✅ NEW (Сессия 8)
 │   ├── planets_in_houses.json            ✅ NEW (Сессия 8)
 │   └── aspects.json                      ✅ NEW (Сессия 8)
+├── Horoscopes/
+│   ├── daily_templates.json              ✅ NEW (Сессия 9)
+│   ├── planet_transits.json              ✅ NEW (Сессия 9)
+│   ├── monthly_themes.json               ✅ NEW (Сессия 9)
+│   └── aspect_predictions.json           ✅ NEW (Сессия 9)
 └── UI/
     └── faq.json                          ✅ EXISTING
 
@@ -731,12 +736,61 @@ Scripts/
 - После: 9.0/10 (0 CRITICAL, 0 HIGH issues)
 - Статус: ✅ PRODUCTION READY
 
+### Сессия 9 (Horoscope Content Library - Daily & Monthly Predictions)
+- **Новых файлов:** 4 (horoscope template JSON files)
+- **Строк контента:** ~7,000 JSON строк
+- **Коммитов:** 1
+
+**Реализовано:**
+
+#### Horoscope Content System (CONTENT-004 to CONTENT-007)
+- `Content/Horoscopes/daily_templates.json` - Шаблоны для ежедневных гороскопов (2,354 строки)
+- `Content/Horoscopes/planet_transits.json` - Транзиты планет через знаки (921 строка)
+- `Content/Horoscopes/monthly_themes.json` - Месячные темы для знаков (3,345 строк)
+- `Content/Horoscopes/aspect_predictions.json` - Предсказания на основе аспектов (332 строки)
+
+**Daily Templates:**
+- 144 транзита Луны (12 знаков × 12 целевых знаков)
+- Прогнозы по 5 областям жизни (карьера, любовь, здоровье, финансы, рост)
+- Общие темы для всех 12 знаков зодиака
+- Гармоничные и напряженные аспекты
+
+**Planet Transits:**
+- 48 интерпретаций транзитов (4 планеты × 12 знаков)
+- Солнце, Меркурий, Венера, Марс через все знаки
+- Длительность, влияние, темы, советы
+
+**Monthly Themes:**
+- 144 месячных прогноза (12 месяцев × 12 знаков)
+- Главная тема месяца, области фокуса
+- Удачные дни, возможности, предупреждения
+
+**Aspect Predictions:**
+- 18 интерпретаций основных аспектов
+- Солнце, Луна, Меркурий, Венера, Марс
+- Внешние планеты (Юпитер, Сатурн, Уран, Нептун)
+- Ретроградные периоды
+
+**Характеристики контента:**
+- Язык: Русский
+- Формат: Структурированный JSON
+- Стиль: Профессиональный астрологический
+- Использование: Daily horoscopes, monthly forecasts, transit notifications
+
+**Применение:**
+- Генерация персонализированных ежедневных гороскопов
+- Месячные прогнозы для пользователей
+- Уведомления о важных транзитах
+- Контент для engagement и retention
+
 ### ИТОГО за все сессии (обновлено)
-- **Всего файлов:** 65 (60 новых, 8 обновленных)
-- **Всего строк:** ~22,000
-- **Коммитов:** 15
+- **Всего файлов:** 69 (64 новых, 8 обновленных)
+- **Всего строк:** ~29,000
+- **Коммитов:** 16
 - **Production code:** ~8,300 строк (включая security rules)
 - **Tests:** ~6,240 строк (170 тестов)
 - **Documentation:** ~3,600 строк (включая SECURITY_IMPROVEMENTS.md)
-- **Content:** ~6,000 строк JSON (340 интерпретаций)
+- **Content:** ~13,000 строк JSON (694+ шаблонов)
+  - Astrological interpretations: 340 текстов (planets in signs, houses, aspects)
+  - Horoscope templates: 354 шаблона (daily, monthly, transits, predictions)
 - **Локализаций:** 2 языка (English, Русский)
