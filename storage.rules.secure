@@ -1,0 +1,151 @@
+// Firebase Storage Security Rules for Astrolog App - HARDENED VERSION
+// Last Updated: 2025-01-19
+// Security Audit: FIREBASE_SECURITY_AUDIT.md
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ==========================================
+    // USER PROFILE DATA
+    // ==========================================
+    match /users/{userId}/{fileName} {
+      allow read: if isAuthenticated() &&
+                     isOwner(userId);
+
+      allow write: if isAuthenticated() &&
+                      isOwner(userId) &&
+                      isValidUserFile(request.resource) &&
+                      request.resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+
+    // ==========================================
+    // BIRTH CHART IMAGES AND EXPORTS
+    // ==========================================
+    match /charts/{userId}/{fileName} {
+      allow read: if isAuthenticated() &&
+                     isOwner(userId);
+
+      allow write: if isAuthenticated() &&
+                      isOwner(userId) &&
+                      isValidChartImage(request.resource) &&
+                      request.resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+
+    // ==========================================
+    // MEDITATION AUDIO FILES (Read-only for users)
+    // ==========================================
+    match /audio/meditations/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Admin uploads only (via Cloud Functions)
+    }
+
+    // ==========================================
+    // HOROSCOPE IMAGES AND ASSETS (Read-only)
+    // ==========================================
+    match /assets/horoscopes/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Admin uploads only
+    }
+
+    // ==========================================
+    // SHARED CHART EXPORTS (Social Features)
+    // ==========================================
+    match /shared/{chartId}/{fileName} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated() &&
+                       isValidChartImage(request.resource) &&
+                       request.resource.size < 5 * 1024 * 1024; // 5MB limit
+
+      allow update, delete: if isAuthenticated() &&
+                               isChartOwner(chartId);
+    }
+
+    // ==========================================
+    // PUBLIC ASSETS AND STATIC CONTENT
+    // ==========================================
+    match /public/{allPaths=**} {
+      allow read: if true; // Public read access
+      allow write: if false; // Admin uploads only
+    }
+
+    // ==========================================
+    // TEMPORARY UPLOADS (Auto-cleanup after 24h)
+    // ==========================================
+    match /temp/{userId}/{fileName} {
+      allow read: if isAuthenticated() &&
+                     isOwner(userId);
+
+      allow write: if isAuthenticated() &&
+                      isOwner(userId) &&
+                      isValidTempFile(request.resource) &&
+                      request.resource.size < 20 * 1024 * 1024; // 20MB for temp files
+
+      allow delete: if isAuthenticated() &&
+                       isOwner(userId);
+    }
+
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
+
+    // Authentication check
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Ownership verification
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Check if user owns the chart (requires Firestore lookup)
+    function isChartOwner(chartId) {
+      return request.auth != null &&
+             firestore.get(/databases/(default)/documents/sharedCharts/$(chartId)).data.ownerId == request.auth.uid;
+    }
+
+    // ==========================================
+    // FILE VALIDATION FUNCTIONS
+    // ==========================================
+
+    // Validate user profile files (images, JSON, PDF only)
+    function isValidUserFile(file) {
+      return file.contentType.matches('image/(jpeg|png|gif|webp)') ||
+             file.contentType == 'application/json' ||
+             file.contentType == 'application/pdf';
+    }
+
+    // Validate chart image files (images only)
+    function isValidChartImage(file) {
+      return file.contentType.matches('image/(jpeg|png|svg\\+xml|webp)');
+    }
+
+    // Validate temporary files (broader range for processing)
+    function isValidTempFile(file) {
+      return file.contentType.matches('image/.*') ||
+             file.contentType == 'application/json' ||
+             file.contentType == 'application/pdf' ||
+             file.contentType == 'text/plain';
+    }
+
+    // Optional: Email verification check (uncomment to enforce)
+    // function isVerifiedUser() {
+    //   return request.auth != null &&
+    //          request.auth.token.email_verified == true;
+    // }
+
+    // ==========================================
+    // SECURITY NOTES
+    // ==========================================
+    // 1. All uploads require authentication
+    // 2. Users can only access their own files (userId-based isolation)
+    // 3. File types are strictly validated via MIME type
+    // 4. File sizes are limited to prevent abuse
+    // 5. Public assets are read-only
+    // 6. Admin uploads handled via Cloud Functions (not direct client access)
+    // 7. Shared content uses Firestore lookup for ownership verification
+    // 8. Temporary files support larger sizes for processing workflows
+  }
+}

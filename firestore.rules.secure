@@ -1,0 +1,204 @@
+// Firestore Security Rules for Astrolog App - HARDENED VERSION
+// Last Updated: 2025-01-19
+// Security Audit: FIREBASE_SECURITY_AUDIT.md
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================
+    // USERS COLLECTION
+    // ==========================================
+    match /users/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() &&
+                       isOwner(userId) &&
+                       validateUser(request.resource.data);
+      allow update: if isAuthenticated() &&
+                       isOwner(userId) &&
+                       validateUser(request.resource.data) &&
+                       unchangedFields(['uid', 'createdAt']);
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // ==========================================
+    // BIRTH CHARTS COLLECTION
+    // ==========================================
+    match /birthCharts/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+
+      allow create: if isAuthenticated() &&
+                       isOwner(userId) &&
+                       validateBirthChart(request.resource.data);
+
+      allow update: if isAuthenticated() &&
+                       isOwner(userId) &&
+                       validateBirthChart(request.resource.data) &&
+                       unchangedFields(['userId', 'createdAt']);
+
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // ==========================================
+    // HOROSCOPES COLLECTION
+    // ==========================================
+    match /horoscopes/{date} {
+      allow read: if isAuthenticated();
+
+      match /signs/{sign} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin(); // Admin-only writes
+      }
+    }
+
+    // ==========================================
+    // USER INTERPRETATIONS
+    // ==========================================
+    match /interpretations/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+
+      allow create: if isAuthenticated() &&
+                       isOwner(userId) &&
+                       validateInterpretation(request.resource.data);
+
+      allow update: if isAuthenticated() &&
+                       isOwner(userId) &&
+                       validateInterpretation(request.resource.data);
+
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // ==========================================
+    // SHARED CHARTS (Social Features)
+    // ==========================================
+    match /sharedCharts/{chartId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated() &&
+                       request.resource.data.ownerId == request.auth.uid &&
+                       validateSharedChart(request.resource.data);
+
+      allow update: if isAuthenticated() &&
+                       resource.data.ownerId == request.auth.uid &&
+                       request.resource.data.ownerId == resource.data.ownerId && // Prevent ownership change
+                       validateSharedChart(request.resource.data);
+
+      allow delete: if isAuthenticated() &&
+                       resource.data.ownerId == request.auth.uid;
+    }
+
+    // ==========================================
+    // ADMIN COLLECTION (For role management)
+    // ==========================================
+    match /admins/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if false; // Only server-side can modify
+    }
+
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
+
+    // Authentication check
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Ownership verification
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Admin role check
+    function isAdmin() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Email verification check (optional - uncomment to enforce)
+    // function isVerifiedUser() {
+    //   return request.auth != null &&
+    //          request.auth.token.email_verified == true;
+    // }
+
+    // Ensure specific fields don't change on update
+    function unchangedFields(fields) {
+      return fields.toSet().difference(request.resource.data.diff(resource.data).affectedKeys()).size() == fields.size();
+    }
+
+    // ==========================================
+    // VALIDATION FUNCTIONS
+    // ==========================================
+
+    // Validate User document structure
+    function validateUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+             data.uid is string &&
+             data.uid.size() > 0 &&
+             data.uid.size() < 128 &&
+             data.email is string &&
+             data.email.matches('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$') &&
+             data.email.size() < 256 &&
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time;
+    }
+
+    // Validate Birth Chart structure with comprehensive checks
+    function validateBirthChart(data) {
+      return data.keys().hasAll(['chartData', 'calculatedAt', 'userId']) &&
+
+             // UserId validation
+             data.userId is string &&
+             data.userId.size() > 0 &&
+             data.userId.size() < 128 &&
+
+             // ChartData validation
+             data.chartData is map &&
+             data.chartData.size() < 50 && // Limit nested fields
+
+             // Timestamp validation
+             data.calculatedAt is timestamp &&
+             data.calculatedAt >= request.time - duration.value(7, 'd') && // Max 7 days old
+             data.calculatedAt <= request.time + duration.value(1, 'h') && // Max 1 hour in future
+
+             // Validate planets array if present
+             (!data.chartData.keys().hasAny(['planets']) ||
+              (data.chartData.planets is list && data.chartData.planets.size() <= 20)) &&
+
+             // Validate houses array if present
+             (!data.chartData.keys().hasAny(['houses']) ||
+              (data.chartData.houses is list && data.chartData.houses.size() <= 12)) &&
+
+             // Validate aspects array if present
+             (!data.chartData.keys().hasAny(['aspects']) ||
+              (data.chartData.aspects is list && data.chartData.aspects.size() <= 100));
+    }
+
+    // Validate Interpretation document
+    function validateInterpretation(data) {
+      return data.keys().hasAll(['content', 'createdAt', 'type']) &&
+             data.content is string &&
+             data.content.size() > 0 &&
+             data.content.size() < 10000 && // 10KB text limit
+             data.createdAt is timestamp &&
+             data.createdAt <= request.time &&
+             data.type is string &&
+             data.type in ['chart', 'transit', 'horoscope', 'compatibility'];
+    }
+
+    // Validate Shared Chart document
+    function validateSharedChart(data) {
+      return data.keys().hasAll(['ownerId', 'chartData', 'sharedAt', 'permissions']) &&
+             data.ownerId is string &&
+             data.ownerId.size() > 0 &&
+             data.ownerId.size() < 128 &&
+             data.chartData is map &&
+             data.chartData.size() < 50 &&
+             data.sharedAt is timestamp &&
+             data.sharedAt <= request.time &&
+             data.permissions is list &&
+             data.permissions.size() <= 100; // Max 100 shared users
+    }
+  }
+}
